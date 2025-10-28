@@ -7,6 +7,10 @@ export class UsersService {
 
   private readonly users: User[] = [];
 
+  create(nickname: string): User {
+    return new User(nickname);
+  }
+
   storeUser(user: User): void {
     if (this.findById(user.id()) instanceof User) {
       this.logger.log(
