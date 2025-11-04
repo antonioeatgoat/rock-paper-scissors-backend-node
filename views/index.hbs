@@ -127,48 +127,41 @@
     function initializeWebSocket() {
         // const ws = new WebSocket(WS_URL + '?gameId=' + gameId + '&sessionId=' + state.sessionId);
         const socket = io(WS_URL);
+
+        console.log('Connecting to playing rooms');
+
         socket.on('connect', function() {
-            console.log('WebSocket connected');
+            console.debug('WebSocket connected');
 
-            // socket.emit('events', { test: 'test' });
-            // socket.emit('identity', 0, response =>
-            //         console.log('Identity:', response),
-            // );
-        });
+          socket.on('waiting_for_opponent', function() {
+            console.debug('Waiting for opponent');
+          });
 
-        socket.on('*', function(data) {
-            console.error('WebSocket error:', error);
-        });
-        // ws.onmessage = function(event) {
-        //     const message = JSON.parse(event.data);
-        //
-        //     switch (message.type) {
-        //         // case 'opponent_joined':
-        //         //     state.waitingForOpponent = false;
-        //         //     state.timeLeft = 10;
-        //         //     render();
-        //         //     break;
-        //         // case 'timer_update':
-        //         //     state.timeLeft = message.timeLeft;
-        //         //     render();
-        //         //     break;
-        //         // case 'game_result':
-        //         //     state.gameResult = message.result;
-        //         //     state.screen = 'result';
-        //         //     render();
-        //         //     break;
-        //         default:
-        //             console.log('Unknown message type:', message);
-        //     }
-        // };
+          socket.on('game_started', function(data) {
+            console.log('Game joined');
+            console.log(data);
+          });
 
-        socket.on('exception', function(data) {
-            console.error('WebSocket error:', error);
-        });
+          socket.on('game_rejoined', function(data) {
+            console.log('Game recovered');
+            console.log(data);
+          });
 
-        socket.on('disconnect', function() {
+          socket.on('game_finished', function(data) {
+            console.log('Game finished');
+            console.log(data);
+          });
+
+          socket.on('error', function(data) {
+            console.error('WebSocket error:', data?.error);
+          });
+
+          socket.on('disconnect', function() {
             console.log('WebSocket disconnected');
+          });
         });
+
+
 
         // state.ws = ws;
     }
