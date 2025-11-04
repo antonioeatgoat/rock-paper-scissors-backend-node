@@ -34,4 +34,20 @@ export class Game {
 
     throw new Error('This player is not in this game');
   }
+
+  toObject() {
+    return {
+      id: this._id,
+      status: this._status,
+      players: [this._players[0].toObject(), this._players[1].toObject()],
+    };
+  }
+
+  toJSON() {
+    return {
+      id: this._id,
+      status: this._status,
+      players: this._players,
+    };
+  }
 }

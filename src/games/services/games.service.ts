@@ -6,7 +6,6 @@ import { Socket } from 'socket.io';
 import { ConnectResponseDto } from '../dto/connect-response.dto';
 import { ConnectStatus } from '../enums/connect-status.enum';
 import { PlayerStatus } from '../player/player-status.enum';
-import { instanceToPlain } from 'class-transformer';
 
 @Injectable()
 export class GamesService {
@@ -20,14 +19,11 @@ export class GamesService {
     if (existingPlayer instanceof Player) {
       this.logger.debug(
         'Retrieved existing player.',
-        instanceToPlain(existingPlayer),
+        existingPlayer.toObject(),
       );
       const existingGame = this.matchmaking.currentGameOfPlayer(existingPlayer);
       if (existingGame) {
-        this.logger.debug(
-          'Retrieved exisitng game.',
-          instanceToPlain(existingGame),
-        );
+        this.logger.debug('Retrieved exisitng game.', existingGame.toObject());
         return {
           status: ConnectStatus.JOINED_EXISTING,
           currentPlayer: existingPlayer,
@@ -44,8 +40,8 @@ export class GamesService {
     const newPlayer = new Player(
       user.id(),
       user.nickname(),
-      PlayerStatus.WAITING,
       client,
+      PlayerStatus.WAITING,
     );
 
     this.matchmaking.storePlayer(newPlayer);

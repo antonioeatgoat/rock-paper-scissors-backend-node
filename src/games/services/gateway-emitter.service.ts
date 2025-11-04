@@ -3,7 +3,6 @@ import { Game } from '../game/game';
 import { ResponseSerializerService } from './response-serializer.service';
 import { Socket } from 'socket.io';
 import { Player } from '../player/player';
-import { instanceToPlain } from 'class-transformer';
 
 @Injectable()
 export class GatewayEmitterService {
@@ -51,7 +50,7 @@ export class GatewayEmitterService {
     this.logger.debug(
       'WebSocket emits: ' + event,
       'Socket ID: ' + socket?.id,
-      instanceToPlain(data)
+      JSON.parse(JSON.stringify(data))
     );
   }
 }

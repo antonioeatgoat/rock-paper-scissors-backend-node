@@ -8,15 +8,15 @@ describe('Game', () => {
   const player1 = new Player(
     '123456',
     'User A',
-    PlayerStatus.PLAYING,
     {} as Socket,
+    PlayerStatus.PLAYING,
   );
 
   const player2 = new Player(
     '654321',
     'User B',
-    PlayerStatus.PLAYING,
     {} as Socket,
+    PlayerStatus.PLAYING,
   );
 
   const game = new Game([player1, player2]);
