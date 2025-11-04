@@ -36,7 +36,7 @@ export class AccessTokenService {
     });
   }
 
-  extractUserFromHttpRequest(req: RequestWithUser): User {
+  extractUserFromHttpRequest(req: RequestWithUser): User | undefined {
     this.logger.debug('Extracting token from HTTP request.', {
       cookies: req?.cookies ?? [],
     });
@@ -47,7 +47,7 @@ export class AccessTokenService {
   }
 
   // extractUserFromWsClient(client: Socket): User {
-  extractUserFromWsClient(client: Socket): User {
+  extractUserFromWsClient(client: Socket): User | undefined {
     this.logger.debug('Extracting token from Websocket client.', {
       cookies: client?.handshake?.headers?.cookie ?? '',
     });
@@ -59,7 +59,7 @@ export class AccessTokenService {
     );
   }
 
-  private fetchUserFromToken(token: string): User {
+  private fetchUserFromToken(token: string): User | undefined {
     let jwtPayload;
     try {
       jwtPayload = this.jwtService.verify<JwtPayload>(token, {
@@ -67,14 +67,13 @@ export class AccessTokenService {
       });
     } catch {
       this.logger.debug('Error while verifying the token.', { token: token });
-      throw new Error();
+      return;
     }
 
     const user = this.usersService.findById(jwtPayload.sub);
 
     if (user === undefined) {
       this.logger.debug('Impossible to find an user.', { id: jwtPayload.sub });
-      throw new Error();
     }
 
     return user;
