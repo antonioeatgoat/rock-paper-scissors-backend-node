@@ -11,10 +11,11 @@ export class ResponseSerializerService {
   }
 
   connectExistingGame(game: Game, player: Player) {
+    // TODO should be possible to support connection to existing games?
     return {
       opponent: game.opponentOf(player).nickname,
-      gameStatus: game.status(),
-      winner: game.theWinner()?.toObject(),
+      // gameStatus: game.status(),
+      // winner: game.theWinner()?.toObject(),
       startedAt: null, // TODO implement
     };
   }
