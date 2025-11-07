@@ -1,16 +1,22 @@
 import {
+  ConnectedSocket,
+  MessageBody,
   OnGatewayConnection,
   OnGatewayDisconnect,
+  SubscribeMessage,
   WebSocketGateway,
   WebSocketServer,
 } from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
-import { Logger } from '@nestjs/common';
+import { Logger, UseGuards } from '@nestjs/common';
 import { SocketWithUser } from '../auth/interfaces/socket-with-user';
 import { AccessTokenService } from '../auth/services/AccessTokenService';
 import { GamesService } from './services/games.service';
-import { ConnectStatus } from './enums/connect-status.enum';
 import { GatewayEmitterService } from './services/gateway-emitter.service';
+import { AuthenticatedGuard } from '../auth/guards/authenticated.guard';
+import { User } from '../users/user/user';
+import { User as UserDecorator } from '../auth/decorators/user.decorator';
+import { AllowedMove } from './enums/allowed-move.enum';
 
 @WebSocketGateway()
 export class GamesGateway implements OnGatewayConnection, OnGatewayDisconnect {
@@ -42,27 +48,56 @@ export class GamesGateway implements OnGatewayConnection, OnGatewayDisconnect {
     });
     client.user = user;
 
-    const result = this.gamesService.connectUser(user, client);
+    const player = this.gamesService.connectUser(user, client);
 
-    switch (result.status) {
-      case ConnectStatus.NEW:
-        this.emitter.emitGameStarted(result.game);
-        break;
-      case ConnectStatus.JOINED_EXISTING:
-        this.emitter.emitGameRejoined(result.game, result.currentPlayer);
-        break;
-      case ConnectStatus.WAITING:
-        this.emitter.emitWaitingForOpponent(result.currentPlayer);
-        break;
-    }
+    this.gamesService.handleSearchingGame(player);
   }
 
   handleDisconnect(client: Socket) {
     this.logger.debug('Disconnecting: ' + client.id);
   }
 
+  @SubscribeMessage('make_move')
+  @UseGuards(AuthenticatedGuard)
+  handleMove(
+    @ConnectedSocket() client: Socket,
+    @MessageBody() move: string,
+    @UserDecorator() user: User | undefined,
+  ) {
+    this.logReceivedEvent('make_move');
+    if (user === undefined) {
+      throw new Error('Cannot find a valid user');
+    }
+
+    if (!Object.values(AllowedMove).includes(move as AllowedMove)) {
+      this.emitter.emitError(client, 'This move is not valid');
+      this.logger.warn('Received a not valid move');
+      return;
+    }
+
+    this.gamesService.handleMove(client, user, move as AllowedMove);
+  }
+
+  @SubscribeMessage('play_again')
+  @UseGuards(AuthenticatedGuard)
+  handlePlayAgain(
+    @ConnectedSocket() client: Socket,
+    @UserDecorator() user: User | undefined,
+  ) {
+    this.logReceivedEvent('make_move');
+    if (user === undefined) {
+      throw new Error();
+    }
+
+    this.gamesService.handlePlayAgain(client, user);
+  }
+
   private disconnect(client: Socket) {
     this.logger.debug('Closing Websocket connection.');
     client.disconnect();
+  }
+
+  private logReceivedEvent(event: string) {
+    this.logger.debug('Received event: ' + event);
   }
 }

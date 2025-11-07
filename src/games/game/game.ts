@@ -1,9 +1,12 @@
 import { Player } from '../player/player';
 import { GameStatus } from './game-status';
+import { PlayerMove } from './player-move.interface';
+import { AllowedMove } from '../enums/allowed-move.enum';
 
 export class Game {
   private readonly _id: string = crypto.randomUUID();
   private _status: GameStatus = GameStatus.PLAYING;
+  private _moves: Map<string, AllowedMove> = new Map();
 
   constructor(private readonly _players: [Player, Player]) {}
 
@@ -15,8 +18,13 @@ export class Game {
     return this._players;
   }
 
+  hasPlayerId(playerId: string) {
+    // TODO remove?
+    return [this._players[0].id, this._players[1].id].includes(playerId);
+  }
+
   hasPlayer(player: Player) {
-    return [this._players[0].id, this._players[1].id].includes(player.id);
+    return this.hasPlayerId(player.id);
   }
 
   status(): GameStatus {
@@ -35,11 +43,54 @@ export class Game {
     throw new Error('This player is not in this game');
   }
 
+  addMove(playerMove: PlayerMove): void {
+    if (this.isFinished()) {
+      throw new Error('Both players already moved in this game');
+    }
+
+    if (!this.hasPlayer(playerMove.player)) {
+      throw new Error('This player is not in this game');
+    }
+
+    this._moves.set(playerMove.player.id, playerMove.move);
+
+    if (this._moves.size === 2) {
+      this._status = GameStatus.ENDED;
+    }
+  }
+
+  isFinished(): boolean {
+    return this._status === GameStatus.ENDED;
+  }
+
+  theWinner(): Player | null {
+    const [p1, p2] = this._players;
+
+    const m1 = this._moves.get(p1.id);
+    const m2 = this._moves.get(p2.id);
+
+    if (!m1 || !m2 || m1 === m2) {
+      return null;
+    }
+
+    if (
+      (m1 === AllowedMove.ROCK && m2 === AllowedMove.SCISSORS) ||
+      (m1 === AllowedMove.PAPER && m2 === AllowedMove.ROCK) ||
+      (m1 === AllowedMove.SCISSORS && m2 === AllowedMove.PAPER)
+    ) {
+      return p1;
+    }
+
+    return p2;
+  }
+
   toObject() {
     return {
       id: this._id,
       status: this._status,
       players: [this._players[0].toObject(), this._players[1].toObject()],
+      moves: this._moves,
+      winner: this.theWinner()?.toObject(),
     };
   }
 
@@ -48,6 +99,8 @@ export class Game {
       id: this._id,
       status: this._status,
       players: this._players,
+      moves: this._moves,
+      winner: this.theWinner(),
     };
   }
 }

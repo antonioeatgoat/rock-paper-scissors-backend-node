@@ -14,8 +14,16 @@ export class ResponseSerializerService {
     return {
       opponent: game.opponentOf(player).nickname,
       gameStatus: game.status(),
-      winner: null, // TODO Implement
+      winner: game.theWinner()?.toObject(),
       startedAt: null, // TODO implement
+    };
+  }
+
+  gameFinished(player: Player, winner: Player | null) {
+    return {
+      gameStatus: 'finished',
+      winner: winner ? player.id === winner.id : null,
+      draw: winner === null,
     };
   }
 

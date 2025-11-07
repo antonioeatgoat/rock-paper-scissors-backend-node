@@ -22,12 +22,19 @@
     </div>
 
     <div id="game-container">
-        <h2>Play game</h2>
-        You are playing against <span id="opponent-name"></span>
-        <input type="radio" name="move" value="rock">rock!</input>
-        <input type="radio" name="move" value="paper">paper!</input>
-        <input type="radio" name="move" value="scissor">scissor!</input>
-        <button id="submit-move">Play</button>
+      <h2>Play game</h2>
+      <p>You are playing against <span id="opponent-name"></span></p>
+      <button class="move-btn" data-move="rock" >Rock!</button>
+      <button class="move-btn" data-move="paper" >Paper!</button>
+      <button class="move-btn" data-move="scissor" >Scissor!</button>
+    </div>
+
+    <div id="game-ended-container">
+      <h2>Game ended</h2>
+      <p>Winner is: <span id="opponent-name"></span></p>
+      <p>It is a draw <span id="opponent-name"></span></p>
+      <button id="play-again">Play again!</button>
+      <button id="exit-game">Exit</button>
     </div>
 </body>
 <script>
@@ -54,18 +61,6 @@
             joinGameBtn.addEventListener('click', handleJoinGame);
         }
 
-        // const moveBtns = document.querySelectorAll('.move-btn');
-        // moveBtns.forEach(function(btn) {
-        //     btn.addEventListener('click', function() {
-        //         const move = btn.getAttribute('data-move');
-        //         handleMoveSelect(move);
-        //     });
-        // });
-        //
-        // const playAgainBtn = document.getElementById('play-again-btn');
-        // if (playAgainBtn) {
-        //     playAgainBtn.addEventListener('click', handlePlayAgain);
-        // }
     }
 
     // Handle nickname submission
@@ -98,28 +93,6 @@
     // Handle joining a game
     async function handleJoinGame() {
       initializeWebSocket()
-        // try {
-        //     const response = await fetch(API_BASE_URL + '/games/join', {
-        //         method: 'POST',
-        //         // headers: {
-        //         //     'Content-Type': 'application/json',
-        //         //     'Authorization': 'Bearer ' + state.sessionId
-        //         // }
-        //     });
-        //
-        //     const data = await response.json();
-        //     console.log(data)
-        //     // state.gameId = data.gameId;
-        //     // state.waitingForOpponent = !data.opponentFound;
-        //
-        //     // initializeWebSocket(data.gameId);
-        //     initializeWebSocket();
-        //
-        //     // state.screen = 'game';
-        //     // render();
-        // } catch (error) {
-        //     console.error('Error joining game:', error);
-        // }
     }
 
     // Initialize WebSocket connection
@@ -132,53 +105,65 @@
 
         socket.on('connect', function() {
             console.debug('WebSocket connected');
-
-          socket.on('waiting_for_opponent', function() {
-            console.debug('Waiting for opponent');
-          });
-
-          socket.on('game_started', function(data) {
-            console.log('Game joined');
-            console.log(data);
-          });
-
-          socket.on('game_rejoined', function(data) {
-            console.log('Game recovered');
-            console.log(data);
-          });
-
-          socket.on('game_finished', function(data) {
-            console.log('Game finished');
-            console.log(data);
-          });
-
-          socket.on('error', function(data) {
-            console.error('WebSocket error:', data?.error);
-          });
-
-          socket.on('disconnect', function() {
-            console.log('WebSocket disconnected');
-          });
         });
 
+        socket.on('waiting_for_opponent', function() {
+          console.debug('Waiting for opponent');
+        });
 
+        socket.on('game_started', function(data) {
+          console.log('Game joined');
+          console.log(data);
+        });
+
+        socket.on('game_rejoined', function(data) {
+          console.log('Game recovered');
+          console.log(data);
+        });
+
+        socket.on('game_finished', function(data) {
+          console.log('Game finished');
+          console.log(data);
+        });
+
+        socket.on('error', function(data) {
+          console.error('WebSocket error:', data?.error);
+        });
+
+        socket.on('disconnect', function() {
+          console.log('WebSocket disconnected');
+        });
 
         // state.ws = ws;
-    }
 
-    // Send move to backend via WebSocket
-    // function handleMoveSelect(move) {
-    //     if (state.selectedMove || state.waitingForOpponent) return;
-    //
-    //     state.selectedMove = move;
-    //     render();
-    //
-    //     if (state.ws && state.ws.readyState === WebSocket.OPEN) {
-    //         state.ws.send(JSON.stringify({
-    //             type: 'player_move',
-    //             move: move
-    //         }));
-    //     }
-    // }
+      const moveBtns = document.querySelectorAll('.move-btn');
+      moveBtns.forEach(function(btn) {
+        btn.addEventListener('click', function() {
+          const move = btn.getAttribute('data-move');
+          // handleMoveSelect(socket, move);
+          console.log('Sending move');
+          socket.emit('make_move', move);
+
+        });
+      });
+
+      const playAgainBtn = document.getElementById('play-again');
+
+      if (playAgainBtn) {
+        playAgainBtn.addEventListener('click', function() {
+          console.log('Sending play again');
+          socket.emit('play_again');
+        });
+      }
+
+      const exitGameButton = document.getElementById('exit-game');
+
+      if (exitGameButton) {
+        exitGameButton.addEventListener('click', function() {
+          console.log('Sending exit game');
+          socket.emit('exit_game');
+        });
+      }
+    }
 </script>
 </html>

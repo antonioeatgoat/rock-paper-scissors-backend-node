@@ -7,12 +7,22 @@ import { PlayerStatus } from '../player/player-status.enum';
 
 @Injectable()
 export class MatchmakingService {
-  private readonly players: Player[] = [];
+  private readonly players: Player[] = []; // TODO Convert to Map
 
   constructor(private readonly repository: GamesRepositoryService) {}
 
-  storePlayer(player: Player) {
+  insertPlayer(player: Player) {
     this.players.push(player);
+  }
+
+  updatePlayer(player: Player): boolean {
+    const index = this.players.findIndex((g) => g.id === player.id);
+    if (index === -1) {
+      return false;
+    }
+
+    this.players[index] = player;
+    return true;
   }
 
   retrievePlayer(playerId: string): Player | undefined {
@@ -32,6 +42,11 @@ export class MatchmakingService {
   }
 
   createNewGameForPlayers(players: [Player, Player]): Game {
+    for (const player of players) {
+      player.status = PlayerStatus.PLAYING;
+      this.updatePlayer(player);
+    }
+
     const newGame = new Game(players);
 
     this.repository.insert(newGame);

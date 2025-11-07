@@ -5,7 +5,7 @@ export class Player {
   constructor(
     public readonly id: string,
     public readonly nickname: string,
-    public readonly socket: Socket,
+    public socket: Socket,
     public status: PlayerStatus,
   ) {}
 

@@ -39,6 +39,18 @@ export class GatewayEmitterService {
     player.socket.emit(eventName);
   }
 
+  emitGameFinished(game: Game, winner: Player | null): void {
+    const eventName = 'game_finished';
+    this.logDebug(eventName, null, game);
+
+    for (const player of game.players()) {
+      player.socket.emit(
+        eventName,
+        this.responseSerializer.gameFinished(player, winner),
+      );
+    }
+  }
+
   emitError(client: Socket, message: string): void {
     const eventName = 'error';
     this.logDebug(eventName, client, { error: message });
@@ -50,7 +62,7 @@ export class GatewayEmitterService {
     this.logger.debug(
       'WebSocket emits: ' + event,
       'Socket ID: ' + socket?.id,
-      JSON.parse(JSON.stringify(data))
+      JSON.parse(JSON.stringify(data)),
     );
   }
 }

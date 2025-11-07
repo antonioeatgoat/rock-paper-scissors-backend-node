@@ -5,7 +5,7 @@ import { GameStatus } from '../game/game-status';
 
 @Injectable()
 export class GamesRepositoryService {
-  private readonly games: Game[] = [];
+  private readonly games: Game[] = []; // TODO convert to Map
 
   insert(game: Game): void {
     if (this.findById(game.id())) {
@@ -13,6 +13,16 @@ export class GamesRepositoryService {
     }
 
     this.games.push(game);
+  }
+
+  update(game: Game): boolean {
+    const index = this.games.findIndex((g) => g.id === game.id);
+    if (index === -1) {
+      return false;
+    }
+
+    this.games[index] = game;
+    return true;
   }
 
   findById(id: string): Game | undefined {
@@ -23,7 +33,7 @@ export class GamesRepositoryService {
     return this.games.filter((game) => game.hasPlayer(player));
   }
 
-  findByStatus(gameStatus: GameStatus): Game[] {
+  findByStatus(gameStatus: GameStatus): Game[] { // TODO remove?
     return this.games.filter((game) => game.status() === gameStatus);
   }
 

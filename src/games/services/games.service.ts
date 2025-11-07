@@ -3,38 +3,30 @@ import { Player } from '../player/player';
 import { User } from '../../users/user/user';
 import { MatchmakingService } from './matchmaking.service';
 import { Socket } from 'socket.io';
-import { ConnectResponseDto } from '../dto/connect-response.dto';
-import { ConnectStatus } from '../enums/connect-status.enum';
 import { PlayerStatus } from '../player/player-status.enum';
+import { Game } from '../game/game';
+import { GatewayEmitterService } from './gateway-emitter.service';
+import { AllowedMove } from '../enums/allowed-move.enum';
+import { GamesRepositoryService } from './games-repository.service';
 
 @Injectable()
 export class GamesService {
   private readonly logger = new Logger(GamesService.name);
 
-  constructor(private readonly matchmaking: MatchmakingService) {}
+  constructor(
+    private readonly gameRepository: GamesRepositoryService,
+    private readonly matchmaking: MatchmakingService,
+    private readonly emitter: GatewayEmitterService,
+  ) {}
 
-  connectUser(user: User, client: Socket): ConnectResponseDto {
-    const existingPlayer = this.matchmaking.retrievePlayer(user.id());
+  connectUser(user: User, client: Socket): Player {
+    const existingPlayer = this.fetchExistingPlayer(user);
 
-    if (existingPlayer instanceof Player) {
-      this.logger.debug(
-        'Retrieved existing player.',
-        existingPlayer.toObject(),
-      );
-      const existingGame = this.matchmaking.currentGameOfPlayer(existingPlayer);
-      if (existingGame) {
-        this.logger.debug('Retrieved exisitng game.', existingGame.toObject());
-        return {
-          status: ConnectStatus.JOINED_EXISTING,
-          currentPlayer: existingPlayer,
-          game: existingGame,
-        };
-      }
+    if (existingPlayer) {
+      existingPlayer.socket = client;
+      this.matchmaking.updatePlayer(existingPlayer);
 
-      return {
-        status: ConnectStatus.WAITING,
-        currentPlayer: existingPlayer,
-      };
+      return existingPlayer;
     }
 
     const newPlayer = new Player(
@@ -44,27 +36,121 @@ export class GamesService {
       PlayerStatus.WAITING,
     );
 
-    this.matchmaking.storePlayer(newPlayer);
+    this.matchmaking.insertPlayer(newPlayer);
 
-    const opponent = this.matchmaking.findOpponent(newPlayer);
+    return newPlayer;
+  }
+
+  handleSearchingGame(player: Player) {
+    const existingGame = this.fetchRunningGame(player);
+
+    if (existingGame) {
+      this.emitter.emitGameRejoined(existingGame, player);
+      return;
+    }
+
+    const opponent = this.matchmaking.findOpponent(player);
 
     if (opponent === undefined) {
-      return {
-        status: ConnectStatus.WAITING,
-        currentPlayer: newPlayer,
-      };
+      player.status = PlayerStatus.WAITING;
+      this.matchmaking.updatePlayer(player);
+      this.emitter.emitWaitingForOpponent(player);
+      return;
     }
 
     // If not: create game for user and then join.
     const newGame = this.matchmaking.createNewGameForPlayers([
-      newPlayer,
+      player,
       opponent,
     ]);
 
-    return {
-      status: ConnectStatus.NEW,
-      currentPlayer: newPlayer,
-      game: newGame,
-    };
+    this.emitter.emitGameStarted(newGame);
+  }
+
+  handleMove(socket: Socket, user: User, move: AllowedMove) {
+    const player = this.fetchExistingPlayer(user);
+
+    if (!player) {
+      this.emitter.emitError(socket, 'Cannot find a valid player');
+      this.logger.warn(
+        `User ${user.id()} made a move but has no player associated`,
+      );
+      return;
+    }
+
+    const game = this.fetchRunningGame(player);
+
+    if (!game) {
+      this.emitter.emitError(socket, 'Cannot find a valid game');
+      this.logger.warn(
+        `User ${user.id()} made a move but has no game associated`,
+      );
+      return;
+    }
+
+    if (game.isFinished()) {
+      this.logger.warn(
+        `User ${user.id()} made a move but the game is finished already.`,
+      );
+      this.emitter.emitError(socket, 'This game is finished already');
+      return;
+    }
+
+    game.addMove({ player: player, move: move });
+    this.gameRepository.update(game);
+
+    if (!game.isFinished()) {
+      this.logger.debug(`Player made a move, waiting for the opponent`, {
+        gameId: game.id(),
+        playerId: player.id,
+      });
+      return;
+    }
+
+    const winner = game.theWinner();
+
+    this.emitter.emitGameFinished(game, winner);
+    this.logger.debug(`Game is finished`, {
+      game: game.id(),
+      winner: winner?.toObject(),
+    });
+  }
+
+  handlePlayAgain(socket: Socket, user: User) {
+    const player = this.fetchExistingPlayer(user);
+
+    if (!player) {
+      this.emitter.emitError(socket, 'Cannot find a valid player');
+      this.logger.warn(
+        `User ${user.id()} made a move but has no player associated`,
+      );
+      return;
+    }
+
+    this.handleSearchingGame(player);
+  }
+
+  private fetchRunningGame(player: Player): Game | undefined {
+    const game = this.matchmaking.currentGameOfPlayer(player);
+    if (game) {
+      this.logger.debug('Retrieved exisitng game.', game.toObject());
+    } else {
+      this.logger.debug(
+        'Cannot find an existing game for this player.',
+        player.toObject(),
+      );
+    }
+
+    return game;
+  }
+
+  private fetchExistingPlayer(user: User): Player | undefined {
+    const player = this.matchmaking.retrievePlayer(user.id());
+
+    if (player instanceof Player) {
+      this.logger.debug('Retrieved existing player.', player.toObject());
+    }
+
+    return player;
   }
 }
