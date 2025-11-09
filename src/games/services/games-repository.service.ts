@@ -33,7 +33,9 @@ export class GamesRepositoryService {
     return this.games.filter((game) => game.hasPlayer(player));
   }
 
-  findByStatus(gameStatus: GameStatus): Game[] { // TODO remove?
+  findByStatus(gameStatus: GameStatus): Game[] {
+    // TODO remove?
+
     return this.games.filter((game) => game.status() === gameStatus);
   }
 
