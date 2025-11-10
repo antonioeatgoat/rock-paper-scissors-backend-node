@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Rock Paper Scissors</title>
+</head>
+<body>
+    <h1>Rock - Paper - Scissors </h1>
+
+    <div id="sign-up-container">
+        <h2>Sign up</h2>
+        <input id="nickname-input" type="text" name="nickname"/>
+        <button id="submit-nickname-btn">Sign up!</button>
+    </div>
+
+    <div id="join-container">
+        <h2>Join game</h2>
+        <button id="join-game-btn">Join game!</button>
+    </div>
+
+    <div id="game-container">
+      <h2>Play game</h2>
+      <p>You are playing against <span id="opponent-name"></span></p>
+      <button class="move-btn" data-move="rock" >Rock!</button>
+      <button class="move-btn" data-move="paper" >Paper!</button>
+      <button class="move-btn" data-move="scissor" >Scissor!</button>
+    </div>
+
+    <div id="game-ended-container">
+      <h2>Game ended</h2>
+      <p>Winner is: <span id="winner-name"></span></p>
+      <p>It is a draw ?</p>
+      <button id="play-again">Play again!</button>
+      <button id="exit-game">Exit</button>
+    </div>
+
+    <script src="https://cdn.socket.io/4.3.2/socket.io.min.js" integrity="sha384-KAZ4DtjNhLChOB/hxXuKqhMLYvx3b5MlT55xPEiNmREKRzeEm+RVPlTnAn0ajQNs" crossorigin="anonymous"></script>
+    <script src="./scripts/main.js"></script>
+</body>
+</html>

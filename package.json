@@ -30,10 +30,10 @@
     "@nestjs/jwt": "^11.0.1",
     "@nestjs/platform-express": "^11.0.1",
     "@nestjs/platform-socket.io": "^11.1.8",
+    "@nestjs/serve-static": "^5.0.4",
     "@nestjs/websockets": "^11.1.8",
     "cookie": "^1.0.2",
     "cookie-parser": "^1.4.7",
-    "hbs": "^4.2.0",
     "reflect-metadata": "^0.2.2",
     "rxjs": "^7.8.1"
   },
@@ -68,7 +68,7 @@
   "lint-staged": {
     "*.ts": [
       "npm run format",
-      "npm run lint -- --fix"
+      "npm run lint"
     ]
   },
   "jest": {
