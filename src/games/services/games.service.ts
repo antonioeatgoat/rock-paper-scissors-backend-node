@@ -8,6 +8,7 @@ import { Game } from '../game/game';
 import { GatewayEmitterService } from './gateway-emitter.service';
 import { AllowedMove } from '../enums/allowed-move.enum';
 import { GamesRepositoryService } from './games-repository.service';
+import { PlayersSocketMapper } from './players-socket-mapper.service';
 
 @Injectable()
 export class GamesService {
@@ -17,14 +18,14 @@ export class GamesService {
     private readonly gameRepository: GamesRepositoryService,
     private readonly matchmaking: MatchmakingService,
     private readonly emitter: GatewayEmitterService,
+    private readonly socketMapper: PlayersSocketMapper,
   ) {}
 
   connectUser(user: User, client: Socket): Player {
     const existingPlayer = this.fetchExistingPlayer(user);
 
     if (existingPlayer) {
-      existingPlayer.socket = client;
-      this.matchmaking.updatePlayer(existingPlayer);
+      this.socketMapper.updateSocket(existingPlayer, client);
 
       return existingPlayer;
     }
@@ -32,9 +33,11 @@ export class GamesService {
     const newPlayer = new Player(
       user.id(),
       user.nickname(),
-      client,
+      // client,
       PlayerStatus.WAITING,
     );
+
+    this.socketMapper.updateSocket(newPlayer, client);
 
     this.matchmaking.insertPlayer(newPlayer);
 

@@ -7,6 +7,7 @@ import { MatchmakingService } from './services/matchmaking.service';
 import { GamesRepositoryService } from './services/games-repository.service';
 import { ResponseSerializerService } from './services/response-serializer.service';
 import { GatewayEmitterService } from './services/gateway-emitter.service';
+import { PlayersSocketMapper } from './services/players-socket-mapper.service';
 
 @Module({
   imports: [AuthModule, UsersModule],
@@ -17,6 +18,7 @@ import { GatewayEmitterService } from './services/gateway-emitter.service';
     ResponseSerializerService,
     MatchmakingService,
     GamesRepositoryService,
+    PlayersSocketMapper,
   ],
 })
 export class GamesModule {}

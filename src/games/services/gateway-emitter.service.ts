@@ -3,49 +3,44 @@ import { Game } from '../game/game';
 import { ResponseSerializerService } from './response-serializer.service';
 import { Socket } from 'socket.io';
 import { Player } from '../player/player';
+import { PlayersSocketMapper } from './players-socket-mapper.service';
 
 @Injectable()
 export class GatewayEmitterService {
   private readonly logger = new Logger(GatewayEmitterService.name);
 
-  constructor(private readonly responseSerializer: ResponseSerializerService) {}
+  constructor(
+    private readonly socketMapper: PlayersSocketMapper,
+    private readonly responseSerializer: ResponseSerializerService,
+  ) {}
 
   emitGameStarted(game: Game): void {
-    const eventName = 'game_started';
-    this.logDebug(eventName, null, game);
-
     for (const player of game.players()) {
-      player.socket.emit(
-        eventName,
+      this.emitToPlayer(
+        player,
+        'game_started',
         this.responseSerializer.connectNewGame(game, player),
       );
     }
   }
 
   emitGameRejoined(game: Game, player: Player): void {
-    const eventName = 'game_rejoined';
-    this.logDebug(eventName, player.socket, game);
-
-    player.socket.emit(
-      eventName,
+    this.emitToPlayer(
+      player,
+      'game_rejoined',
       this.responseSerializer.connectExistingGame(game, player),
     );
   }
 
   emitWaitingForOpponent(player: Player): void {
-    const eventName = 'waiting_for_opponent';
-    this.logDebug(eventName, player.socket);
-
-    player.socket.emit(eventName);
+    this.emitToPlayer(player, 'waiting_for_opponent');
   }
 
   emitGameFinished(game: Game): void {
-    const eventName = 'game_finished';
-    this.logDebug(eventName, null, game);
-
     for (const player of game.players()) {
-      player.socket.emit(
-        eventName,
+      this.emitToPlayer(
+        player,
+        'game_finished',
         this.responseSerializer.gameFinished(game, player),
       );
     }
@@ -53,16 +48,33 @@ export class GatewayEmitterService {
 
   emitError(client: Socket, message: string): void {
     const eventName = 'error';
-    this.logDebug(eventName, client, { error: message });
+    this.logger.debug(
+      'WebSocket emits: ' + eventName,
+      'Socket ID: ' + client.id,
+      { error: message },
+    );
 
     client.emit(eventName, this.responseSerializer.error(message));
   }
 
-  private logDebug(event: string, socket: Socket | null, data: any = {}): void {
+  private logDebug(event: string, player: Player, data: any = {}): void {
     this.logger.debug(
       'WebSocket emits: ' + event,
-      'Socket ID: ' + socket?.id,
+      'Player ID: ' + player.id,
       JSON.parse(JSON.stringify(data)),
     );
+  }
+
+  private emitToPlayer(player: Player, event: string, data: any = {}) {
+    this.logDebug(event, player, data);
+
+    const socket = this.socketMapper.getSocket(player);
+
+    if (socket === undefined) {
+      this.logger.error('There is no socket stored for the given user');
+      return;
+    }
+
+    socket.emit(event, data);
   }
 }
