@@ -3,20 +3,21 @@ import { JwtService } from '@nestjs/jwt';
 import { User } from '../../users/user/user';
 import { JwtPayload } from '../interfaces/jwt-payload.interface';
 import type { Response } from 'express';
-import { jwtConstants } from '../constants';
 import { UsersService } from '../../users/users.service';
 import { Socket } from 'socket.io';
 import * as cookie from 'cookie';
 import { RequestWithUser } from '../interfaces/request-with-user';
+import { ConfigService } from '@nestjs/config';
 
 @Injectable()
 export class AccessTokenService {
-  static readonly COOKIE_NAME: string = 'access_token';
-  static readonly COOKIE_EXPIRATION: number = 1000 * 60 * 60; // 1h
+  private readonly cookieName: string = 'access_token';
+  private readonly cookieExpiration: number = 1000 * 60 * 60; // 1h
 
   private readonly logger = new Logger(AccessTokenService.name);
 
   constructor(
+    private readonly config: ConfigService,
     private readonly jwtService: JwtService,
     private readonly usersService: UsersService,
   ) {}
@@ -28,11 +29,11 @@ export class AccessTokenService {
   }
 
   storeAccessTokenInSession(res: Response, token: string) {
-    res.cookie(AccessTokenService.COOKIE_NAME, token, {
+    res.cookie(this.cookieName, token, {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
       sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
-      maxAge: AccessTokenService.COOKIE_EXPIRATION,
+      maxAge: this.cookieExpiration,
     });
   }
 
@@ -41,7 +42,7 @@ export class AccessTokenService {
       cookies: req?.cookies ?? [],
     });
 
-    const token = req?.cookies?.[AccessTokenService.COOKIE_NAME] ?? '';
+    const token = req?.cookies?.[this.cookieName] ?? '';
 
     return this.fetchUserFromToken(token);
   }
@@ -54,16 +55,14 @@ export class AccessTokenService {
 
     const cookies = cookie.parse(client?.handshake?.headers?.cookie ?? '');
 
-    return this.fetchUserFromToken(
-      cookies[AccessTokenService.COOKIE_NAME] ?? '',
-    );
+    return this.fetchUserFromToken(cookies[this.cookieName] ?? '');
   }
 
   private fetchUserFromToken(token: string): User | undefined {
     let jwtPayload;
     try {
       jwtPayload = this.jwtService.verify<JwtPayload>(token, {
-        secret: jwtConstants.secret,
+        secret: this.config.get<string>('JWT_SECRET'),
       });
     } catch {
       this.logger.debug('Error while verifying the token.', { token: token });
