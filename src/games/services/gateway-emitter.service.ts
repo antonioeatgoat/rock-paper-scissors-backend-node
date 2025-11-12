@@ -39,14 +39,14 @@ export class GatewayEmitterService {
     player.socket.emit(eventName);
   }
 
-  emitGameFinished(game: Game, winner: Player | null): void {
+  emitGameFinished(game: Game): void {
     const eventName = 'game_finished';
     this.logDebug(eventName, null, game);
 
     for (const player of game.players()) {
       player.socket.emit(
         eventName,
-        this.responseSerializer.gameFinished(player, winner),
+        this.responseSerializer.gameFinished(game, player),
       );
     }
   }

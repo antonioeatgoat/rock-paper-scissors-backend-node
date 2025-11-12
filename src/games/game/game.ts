@@ -59,6 +59,10 @@ export class Game {
     }
   }
 
+  moveOf(player: Player): AllowedMove | null {
+    return this._moves.get(player.id) ?? null;
+  }
+
   isFinished(): boolean {
     return this._status === GameStatus.ENDED;
   }

@@ -20,11 +20,25 @@ export class ResponseSerializerService {
     };
   }
 
-  gameFinished(player: Player, winner: Player | null) {
+  gameFinished(game: Game, receiver: Player) {
+    const winner = game.theWinner();
+
+    if (winner === null) {
+      return {
+        gameStatus: 'finished',
+        yourMove: game.moveOf(receiver) ?? '',
+        opponentMove: game.moveOf(game.opponentOf(receiver)) ?? '',
+        winner: false,
+        draw: true,
+      };
+    }
+
     return {
       gameStatus: 'finished',
-      winner: winner ? player.id === winner.id : null,
-      draw: winner === null,
+      yourMove: game.moveOf(receiver) ?? '',
+      opponentMove: game.moveOf(game.opponentOf(receiver)) ?? '',
+      winner: receiver.id === winner.id,
+      draw: false,
     };
   }
 

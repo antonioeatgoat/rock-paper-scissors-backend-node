@@ -1,38 +1,50 @@
 const API_BASE_URL = 'http://localhost:3000';
 const WS_URL = 'http://localhost:3000';
 
+let state = {
+  screen: 'login',
+  socket: null,
+  nickname: '',
+  opponentNickname: '',
+}
+
+function render() {
+  //displayScreen(state.screen);
+
+  // Render Screen
+  _hideByClass('.screen');
+  _showById('screen-' + state.screen)
+
+  // Render current nickname
+  document.querySelectorAll('.current-nickname')
+    .forEach(element => element.textContent = state.nickname);
+
+  // Render opponent nickname
+  document.querySelectorAll('.opponent-nickname')
+    .forEach(element => element.textContent = state.opponentNickname);
+}
+
 document.addEventListener("DOMContentLoaded",  main);
 
 function main() {
-  attachEventListeners();
-}
+  const lastScreen = _getLastScreen();
 
-// Attach event listeners after rendering
-function attachEventListeners() {
-  // const nicknameInput = document.getElementById('nickname-input');
-  const submitNicknameBtn = document.getElementById('submit-nickname-btn');
-
-  if (submitNicknameBtn) {
-    submitNicknameBtn.addEventListener('click', () => {
-      void handleNicknameSubmit(); // explicitly ignore the returned Promise
-    });
-  }
-
-  const joinGameBtn = document.getElementById('join-game-btn');
-  if (joinGameBtn) {
-    joinGameBtn.addEventListener('click', handleJoinGame);
+  if (lastScreen && lastScreen !== 'login') {
+    _initializeWebSocket();
   }
 }
 
 // Handle nickname submission
-async function handleNicknameSubmit() {
-  const input = document.getElementById(
+async function signUp() {
+  _hideRegisterError()
+  const inputEl = document.getElementById(
     'nickname-input',
   );
-  const nickname = input?.value?.trim();
+  const nickname = inputEl?.value?.trim();
 
   if (!nickname) {
-    console.log('No nickname');
+    _displayRegisterError('Nickname cannot be empty.');
+    return;
   }
 
   try {
@@ -43,27 +55,71 @@ async function handleNicknameSubmit() {
     });
 
     const data = await response.json();
-    console.log(data);
-    // state.nickname = nickname;
-    // state.sessionId = data.sessionId;
-    // state.screen = 'lobby';
-    // render();
+
+    if (response.status !== 200) {
+      if ('message' in data) {
+        _displayRegisterError(data.message);
+      }
+      return;
+    }
+
+    state.screen = 'lobby';
+    state.nickname = nickname;
+
+    render()
   } catch (error) {
     console.error('Error logging in:', error);
   }
 }
 
 // Handle joining a game
-function handleJoinGame() {
-  initializeWebSocket();
+function findGame() {
+  if (!state.socket) {
+    _initializeWebSocket();
+  }
 }
 
-// Initialize WebSocket connection
-// function initializeWebSocket(gameId) {
-function initializeWebSocket() {
-  const socket= io(WS_URL);
+function makeMove(move) {
+  if (state.screen !== 'playing') {
+    console.debug('Trying to send `make_move` but current screen is wrong.');
+    return;
+  }
 
-  console.log('Connecting to playing rooms');
+  _hideById('moves-container');
+  _updateTextById('choosen-move', move);
+  _showById('choosen-move-container');
+
+  console.debug('Sending `make_move` event.');
+  state.socket.emit('make_move', move);
+}
+
+function playAgain() {
+  if (state.screen !== 'game-finished') {
+    console.warn('Trying to send `play_again` but current screen is wrong.');
+    return;
+  }
+
+  console.debug('Sending `play_again` event.');
+  state.socket.emit('play_again');
+}
+
+// function exitGame() {
+//   if (state.screen !== 'playing') {
+//     console.warn('Trying to send `exit_Game` but current screen is wrong.');
+//     return;
+//   }
+//
+//   _changeScreen('lobby');
+//
+//   console.debug('Sending `exit_game` event.');
+//   state.socket.emit('exit_game');
+// }
+
+function _initializeWebSocket() {
+  const socket = io(WS_URL);
+  state.socket = socket;
+
+  console.debug('Connecting to playing rooms');
 
   socket.on('connect', function () {
     console.debug('WebSocket connected');
@@ -71,21 +127,49 @@ function initializeWebSocket() {
 
   socket.on('waiting_for_opponent', function () {
     console.debug('Waiting for opponent');
+    _changeScreen('waiting');
   });
 
   socket.on('game_started', function (data) {
-    console.log('Game joined');
-    console.log(data);
+    console.debug('Game joined');
+    console.debug(data);
+
+    _cleanPlayingScreen();
+
+    state.opponentNickname = data?.opponent ?? '';
+    _changeScreen('playing');
   });
 
   socket.on('game_rejoined', function (data) {
-    console.log('Game recovered');
-    console.log(data);
+    console.debug('Game recovered');
+    console.debug(data);
+
+    // TODO Getting move selected if already done
+
+    _cleanPlayingScreen();
+
+    state.opponentNickname = data?.opponent ?? '';
+    _changeScreen('playing');
   });
 
   socket.on('game_finished', function (data) {
-    console.log('Game finished');
-    console.log(data);
+    console.debug('Game finished');
+    console.debug(data);
+
+    _updateTextById('your-move', data.yourMove)
+    _updateTextById('opponent-move', data.opponentMove)
+
+    _hideByClass('.game-result')
+
+    if (data.draw === true) {
+      _showById('game-result-tie')
+    } else if (data.winner === true) {
+      _showById('game-result-won')
+    } else {
+      _showById('game-result-lost')
+    }
+
+    _changeScreen('game-finished');
   });
 
   socket.on('error', function (data) {
@@ -93,36 +177,72 @@ function initializeWebSocket() {
   });
 
   socket.on('disconnect', function () {
-    console.log('WebSocket disconnected');
+    console.debug('WebSocket disconnected');
   });
+}
 
-  // state.ws = ws;
+function _changeScreen(screen) {
+  state.screen = screen;
+  _storeLastScreen(screen);
+  render();
+}
 
-  const moveBtns = document.querySelectorAll('.move-btn');
-  moveBtns.forEach(function (btn) {
-    btn.addEventListener('click', function () {
-      const move = btn.getAttribute('data-move');
-      // handleMoveSelect(socket, move);
-      console.log('Sending move');
-      socket.emit('make_move', move);
-    });
-  });
+function _cleanPlayingScreen() {
+  _showById('moves-container');
+  _hideById('choosen-move-container');
+}
 
-  const playAgainBtn = document.getElementById('play-again');
+function _storeLastScreen(screen) {
+  window.localStorage.setItem('lastScreen', screen);
+}
 
-  if (playAgainBtn) {
-    playAgainBtn.addEventListener('click', function () {
-      console.log('Sending play again');
-      socket.emit('play_again');
-    });
+function _getLastScreen() {
+  return window.localStorage.getItem('lastScreen');
+}
+
+function _displayRegisterError(message) {
+  const errorEl = document.querySelector('.error-message');
+  errorEl.textContent = message;
+  errorEl.classList.remove('hidden');
+}
+
+function _hideRegisterError() {
+  const errorEl = document.querySelector('.error-message');
+  errorEl.classList.add('hidden');
+}
+
+function _updateTextById(elementId, text) {
+  const element = document.getElementById(elementId)
+
+  if (!element) {
+    console.error('Cannot select element', elementId);
+    return;
   }
 
-  const exitGameButton = document.getElementById('exit-game');
+  element.textContent = text;
+}
 
-  if (exitGameButton) {
-    exitGameButton.addEventListener('click', function () {
-      console.log('Sending exit game');
-      socket.emit('exit_game');
-    });
+
+function _hideById(elementId) {
+  const element = document.getElementById(elementId)
+  if (element) {
+    element.classList.add('hidden');
   }
+}
+
+function _showById(elementId) {
+  const element = document.getElementById(elementId)
+  if (element) {
+    element.classList.remove('hidden');
+  }
+}
+
+function _hideByClass(elementsClass) {
+  document.querySelectorAll(elementsClass)
+    .forEach(element => element.classList.add('hidden'));
+}
+
+function _showByClass(elementsClass) {
+  document.querySelectorAll(elementsClass)
+    .forEach(element => element.classList.remove('hidden'));
 }

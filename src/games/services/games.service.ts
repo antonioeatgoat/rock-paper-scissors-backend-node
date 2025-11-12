@@ -107,12 +107,12 @@ export class GamesService {
       return;
     }
 
-    const winner = game.theWinner();
+    // const winner = game.theWinner();
 
-    this.emitter.emitGameFinished(game, winner);
+    this.emitter.emitGameFinished(game);
     this.logger.debug(`Game is finished`, {
       game: game.id(),
-      winner: winner?.toObject(),
+      winner: game.theWinner()?.toObject(),
     });
   }
 
@@ -122,7 +122,7 @@ export class GamesService {
     if (!player) {
       this.emitter.emitError(socket, 'Cannot find a valid player');
       this.logger.warn(
-        `User ${user.id()} made a move but has no player associated`,
+        `User ${user.id()} is trying to get a game no player associated.`,
       );
       return;
     }
