@@ -10,7 +10,7 @@
     "url": "https://github.com/antonioeatgoat/rock-paper-scissors-backend-node/issues"
   },
   "scripts": {
-    "build": "nest build",
+    "build": "nest build && npm run fe:build",
     "format": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\"",
     "start": "nest start",
     "start:dev": "nest start --watch",
