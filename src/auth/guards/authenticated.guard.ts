@@ -32,21 +32,24 @@ export class AuthenticatedGuard implements CanActivate {
   private authenticateHttp(context: ExecutionContext) {
     const request = context.switchToHttp().getRequest<RequestWithUser>();
 
-    try {
-      request.user =
-        this.accessTokenService.extractUserFromHttpRequest(request);
-    } catch {
+    const user = this.accessTokenService.extractUserFromHttpRequest(request);
+
+    if (user === undefined) {
       throw new UnauthorizedException();
     }
+
+    request.user = user;
   }
 
   private authenticateWs(context: ExecutionContext) {
     const client = context.switchToWs().getClient<SocketWithUser>();
 
-    try {
-      client.user = this.accessTokenService.extractUserFromWsClient(client);
-    } catch {
+    const user = this.accessTokenService.extractUserFromWsClient(client);
+
+    if (user === undefined) {
       throw new UnauthorizedException();
     }
+
+    client.user = user;
   }
 }

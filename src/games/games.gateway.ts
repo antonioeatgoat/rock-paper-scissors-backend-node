@@ -62,12 +62,9 @@ export class GamesGateway implements OnGatewayConnection, OnGatewayDisconnect {
   handleMove(
     @ConnectedSocket() client: Socket,
     @MessageBody() move: string,
-    @UserDecorator() user: User | undefined,
+    @UserDecorator() user: User,
   ) {
     this.logReceivedEvent('make_move');
-    if (user === undefined) {
-      throw new Error('Cannot find a valid user');
-    }
 
     if (!Object.values(AllowedMove).includes(move as AllowedMove)) {
       this.emitter.emitError(client, 'This move is not valid');
@@ -82,12 +79,9 @@ export class GamesGateway implements OnGatewayConnection, OnGatewayDisconnect {
   @UseGuards(AuthenticatedGuard)
   handlePlayAgain(
     @ConnectedSocket() client: Socket,
-    @UserDecorator() user: User | undefined,
+    @UserDecorator() user: User,
   ) {
     this.logReceivedEvent('make_move');
-    if (user === undefined) {
-      throw new Error();
-    }
 
     this.gamesService.handlePlayAgain(client, user);
   }

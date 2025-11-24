@@ -1,4 +1,8 @@
-import { createParamDecorator, ExecutionContext } from '@nestjs/common';
+import {
+  BadRequestException,
+  createParamDecorator,
+  ExecutionContext,
+} from '@nestjs/common';
 import { RequestWithUser } from '../interfaces/request-with-user';
 import { SocketWithUser } from '../interfaces/socket-with-user';
 
@@ -16,6 +20,6 @@ export const User = createParamDecorator(
       return client.user;
     }
 
-    return undefined;
+    throw new BadRequestException('User cannot be extracted from this request');
   },
 );
