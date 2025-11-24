@@ -10,7 +10,7 @@ import { ConfigModule } from '@nestjs/config';
   imports: [
     ConfigModule.forRoot({
       isGlobal: true,
-      envFilePath: process.env.NODE_ENV === undefined ? '.env' : undefined,
+      ignoreEnvFile: process.env.NODE_ENV !== undefined,
     }),
     ServeStaticModule.forRoot({
       rootPath: join(__dirname, '..', 'public'),
