@@ -1,9 +1,9 @@
 import { Injectable } from '@nestjs/common';
 import { Player } from '../player/player';
 import { Game } from '../game/game';
-import { GamesRepositoryService } from './games-repository.service';
 import { GameStatus } from '../game/game-status';
 import { PlayerStatus } from '../player/player-status.enum';
+import { GamesRepositoryService } from '../games-repository.service';
 
 @Injectable()
 export class MatchmakingService {
@@ -29,8 +29,8 @@ export class MatchmakingService {
     return this.players.find((player) => player.id === playerId);
   }
 
-  currentGameOfPlayer(player: Player): Game | undefined {
-    const games = this.repository.findByPlayer(player);
+  async currentGameOfPlayer(player: Player): Promise<Game | undefined> {
+    const games = await this.repository.findByPlayer(player);
 
     return games.find((game) => game.status() === GameStatus.PLAYING);
   }
@@ -41,7 +41,7 @@ export class MatchmakingService {
     );
   }
 
-  createNewGameForPlayers(players: [Player, Player]): Game {
+  async createNewGameForPlayers(players: [Player, Player]): Promise<Game> {
     for (const player of players) {
       player.status = PlayerStatus.PLAYING;
       this.updatePlayer(player);
@@ -49,7 +49,7 @@ export class MatchmakingService {
 
     const newGame = new Game(players);
 
-    this.repository.insert(newGame);
+    await this.repository.insert(newGame);
 
     return newGame;
   }

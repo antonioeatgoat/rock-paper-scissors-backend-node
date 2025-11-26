@@ -31,12 +31,12 @@ export class GamesGateway implements OnGatewayConnection, OnGatewayDisconnect {
     private readonly emitter: GatewayEmitterService,
   ) {}
 
-  handleConnection(client: SocketWithUser) {
+  async handleConnection(client: SocketWithUser) {
     this.logger.debug('Websocket connection attempt..');
 
-    const user = this.accessTokenService.extractUserFromWsClient(client);
+    const user = await this.accessTokenService.extractUserFromWsClient(client);
 
-    if (user === undefined) {
+    if (user === null) {
       this.emitter.emitError(client, 'Cannot authenticate current user.');
       this.disconnect(client);
       return;
@@ -50,7 +50,7 @@ export class GamesGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
     const player = this.gamesService.connectUser(user, client);
 
-    this.gamesService.handleSearchingGame(player);
+    await this.gamesService.handleSearchingGame(player);
   }
 
   handleDisconnect(client: Socket) {
@@ -59,7 +59,7 @@ export class GamesGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
   @SubscribeMessage('make_move')
   @UseGuards(AuthenticatedGuard)
-  handleMove(
+  async handleMove(
     @ConnectedSocket() client: Socket,
     @MessageBody() move: string,
     @UserDecorator() user: User,
@@ -72,18 +72,18 @@ export class GamesGateway implements OnGatewayConnection, OnGatewayDisconnect {
       return;
     }
 
-    this.gamesService.handleMove(client, user, move as AllowedMove);
+    await this.gamesService.handleMove(client, user, move as AllowedMove);
   }
 
   @SubscribeMessage('play_again')
   @UseGuards(AuthenticatedGuard)
-  handlePlayAgain(
+  async handlePlayAgain(
     @ConnectedSocket() client: Socket,
     @UserDecorator() user: User,
   ) {
     this.logReceivedEvent('make_move');
 
-    this.gamesService.handlePlayAgain(client, user);
+    await this.gamesService.handlePlayAgain(client, user);
   }
 
   private disconnect(client: Socket) {

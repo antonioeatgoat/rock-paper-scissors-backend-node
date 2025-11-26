@@ -3,11 +3,11 @@ import { JwtService } from '@nestjs/jwt';
 import { User } from '../../users/user/user';
 import { JwtPayload } from '../interfaces/jwt-payload.interface';
 import type { Response } from 'express';
-import { UsersService } from '../../users/users.service';
 import { Socket } from 'socket.io';
 import * as cookie from 'cookie';
 import { RequestWithUser } from '../interfaces/request-with-user';
 import { ConfigService } from '@nestjs/config';
+import { UsersRepositoryService } from '../../users/users-repository.service';
 
 @Injectable()
 export class AccessTokenService {
@@ -19,7 +19,7 @@ export class AccessTokenService {
   constructor(
     private readonly config: ConfigService,
     private readonly jwtService: JwtService,
-    private readonly usersService: UsersService,
+    private readonly usersRepository: UsersRepositoryService,
   ) {}
 
   generateAccessToken(user: User): string {
@@ -37,7 +37,7 @@ export class AccessTokenService {
     });
   }
 
-  extractUserFromHttpRequest(req: RequestWithUser): User | undefined {
+  extractUserFromHttpRequest(req: RequestWithUser): Promise<User | null> {
     this.logger.debug('Extracting token from HTTP request.', {
       cookies: req?.cookies ?? [],
     });
@@ -47,8 +47,7 @@ export class AccessTokenService {
     return this.fetchUserFromToken(token);
   }
 
-  // extractUserFromWsClient(client: Socket): User {
-  extractUserFromWsClient(client: Socket): User | undefined {
+  extractUserFromWsClient(client: Socket): Promise<User | null> {
     this.logger.debug('Extracting token from Websocket client.', {
       cookies: client?.handshake?.headers?.cookie ?? '',
     });
@@ -58,7 +57,7 @@ export class AccessTokenService {
     return this.fetchUserFromToken(cookies[this.cookieName] ?? '');
   }
 
-  private fetchUserFromToken(token: string): User | undefined {
+  private async fetchUserFromToken(token: string): Promise<User | null> {
     let jwtPayload;
     try {
       jwtPayload = this.jwtService.verify<JwtPayload>(token, {
@@ -66,12 +65,12 @@ export class AccessTokenService {
       });
     } catch {
       this.logger.debug('Error while verifying the token.', { token: token });
-      return;
+      return null;
     }
 
-    const user = this.usersService.findById(jwtPayload.sub);
+    const user = await this.usersRepository.findById(jwtPayload.sub);
 
-    if (user === undefined) {
+    if (user === null) {
       this.logger.debug('Impossible to find an user.', { id: jwtPayload.sub });
     }
 

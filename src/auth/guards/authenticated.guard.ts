@@ -12,15 +12,15 @@ import { SocketWithUser } from '../interfaces/socket-with-user';
 export class AuthenticatedGuard implements CanActivate {
   constructor(private readonly accessTokenService: AccessTokenService) {}
 
-  canActivate(context: ExecutionContext): boolean {
+  async canActivate(context: ExecutionContext): Promise<boolean> {
     const type = context.getType();
 
     switch (type) {
       case 'http':
-        this.authenticateHttp(context);
+        await this.authenticateHttp(context);
         break;
       case 'ws':
-        this.authenticateWs(context);
+        await this.authenticateWs(context);
         break;
       default:
         return false;
@@ -29,27 +29,31 @@ export class AuthenticatedGuard implements CanActivate {
     return true;
   }
 
-  private authenticateHttp(context: ExecutionContext) {
+  private async authenticateHttp(context: ExecutionContext) {
     const request = context.switchToHttp().getRequest<RequestWithUser>();
 
-    const user = this.accessTokenService.extractUserFromHttpRequest(request);
+    await this.accessTokenService
+      .extractUserFromHttpRequest(request)
+      .then((user) => {
+        if (user === null) {
+          throw new UnauthorizedException();
+        }
 
-    if (user === undefined) {
-      throw new UnauthorizedException();
-    }
-
-    request.user = user;
+        request.user = user;
+      });
   }
 
-  private authenticateWs(context: ExecutionContext) {
+  private async authenticateWs(context: ExecutionContext) {
     const client = context.switchToWs().getClient<SocketWithUser>();
 
-    const user = this.accessTokenService.extractUserFromWsClient(client);
+    await this.accessTokenService
+      .extractUserFromWsClient(client)
+      .then((user) => {
+        if (user === null) {
+          throw new UnauthorizedException();
+        }
 
-    if (user === undefined) {
-      throw new UnauthorizedException();
-    }
-
-    client.user = user;
+        client.user = user;
+      });
   }
 }

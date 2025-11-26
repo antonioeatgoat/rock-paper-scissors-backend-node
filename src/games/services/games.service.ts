@@ -7,15 +7,15 @@ import { PlayerStatus } from '../player/player-status.enum';
 import { Game } from '../game/game';
 import { GatewayEmitterService } from './gateway-emitter.service';
 import { AllowedMove } from '../enums/allowed-move.enum';
-import { GamesRepositoryService } from './games-repository.service';
 import { PlayersSocketMapper } from './players-socket-mapper.service';
+import { GamesRepositoryService } from '../games-repository.service';
 
 @Injectable()
 export class GamesService {
   private readonly logger = new Logger(GamesService.name);
 
   constructor(
-    private readonly gameRepository: GamesRepositoryService,
+    private readonly repository: GamesRepositoryService,
     private readonly matchmaking: MatchmakingService,
     private readonly emitter: GatewayEmitterService,
     private readonly socketMapper: PlayersSocketMapper,
@@ -44,8 +44,8 @@ export class GamesService {
     return newPlayer;
   }
 
-  handleSearchingGame(player: Player) {
-    const existingGame = this.fetchRunningGame(player);
+  async handleSearchingGame(player: Player) {
+    const existingGame = await this.fetchRunningGame(player);
 
     if (existingGame) {
       this.emitter.emitGameRejoined(existingGame, player);
@@ -62,7 +62,7 @@ export class GamesService {
     }
 
     // If not: create game for user and then join.
-    const newGame = this.matchmaking.createNewGameForPlayers([
+    const newGame = await this.matchmaking.createNewGameForPlayers([
       player,
       opponent,
     ]);
@@ -70,7 +70,7 @@ export class GamesService {
     this.emitter.emitGameStarted(newGame);
   }
 
-  handleMove(socket: Socket, user: User, move: AllowedMove) {
+  async handleMove(socket: Socket, user: User, move: AllowedMove) {
     const player = this.fetchExistingPlayer(user);
 
     if (!player) {
@@ -81,7 +81,7 @@ export class GamesService {
       return;
     }
 
-    const game = this.fetchRunningGame(player);
+    const game = await this.fetchRunningGame(player);
 
     if (!game) {
       this.emitter.emitError(socket, 'Cannot find a valid game');
@@ -100,7 +100,7 @@ export class GamesService {
     }
 
     game.addMove({ player: player, move: move });
-    this.gameRepository.update(game);
+    await this.repository.update(game);
 
     if (!game.isFinished()) {
       this.logger.debug(`Player made a move, waiting for the opponent`, {
@@ -119,7 +119,7 @@ export class GamesService {
     });
   }
 
-  handlePlayAgain(socket: Socket, user: User) {
+  async handlePlayAgain(socket: Socket, user: User) {
     const player = this.fetchExistingPlayer(user);
 
     if (!player) {
@@ -130,11 +130,11 @@ export class GamesService {
       return;
     }
 
-    this.handleSearchingGame(player);
+    await this.handleSearchingGame(player);
   }
 
-  private fetchRunningGame(player: Player): Game | undefined {
-    const game = this.matchmaking.currentGameOfPlayer(player);
+  private async fetchRunningGame(player: Player): Promise<Game | undefined> {
+    const game = await this.matchmaking.currentGameOfPlayer(player);
     if (game) {
       this.logger.debug('Retrieved exisitng game.', game.toObject());
     } else {

@@ -11,8 +11,8 @@ export class AuthController {
   constructor(private readonly authService: AuthService) {}
 
   @Post('register')
-  register(@Body() registerDto: RegisterDto, @Res() res: Response) {
-    this.authService.register(res, registerDto);
+  async register(@Body() registerDto: RegisterDto, @Res() res: Response) {
+    await this.authService.register(res, registerDto);
 
     res.status(200);
     return res.json({
