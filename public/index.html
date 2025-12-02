@@ -5,8 +5,29 @@
   <title>Rock Paper Scissors</title>
   <link href="./styles/styles.css" rel="stylesheet">
 </head>
-<body class="min-h-screen bg-gradient-to-br from-purple-600 via-pink-600 to-red-600 text-gray-600 flex items-center justify-center p-4">
-<div class="w-full max-w-md" id="app-container">
+<body class="bg-gradient-to-br from-purple-600 via-pink-600 to-red-600 text-gray-600 min-h-screen flex flex-col">
+<!-- Header -->
+<header id="game-header" class="hidden bg-white/90 backdrop-blur-sm shadow-md">
+  <div class="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between">
+    <p class="text-gray-800 font-semibold">Hello, <span class="current-nickname"></span></p>
+
+    <button
+      id="logout-btn"
+      onclick="window.alert('Logout');"
+      class="hidden bg-gradient-to-r from-purple-600 to-pink-600 text-white font-semibold px-4 py-2 rounded-lg hover:from-purple-700 hover:to-pink-700 transition transform hover:scale-105"
+    >
+      Logout
+    </button>
+    <button
+      id="exit-game-btn"
+      onclick="window.alert('Exit game');"
+      class="hidden bg-gradient-to-r from-purple-600 to-pink-600 text-white font-semibold px-4 py-2 rounded-lg hover:from-purple-700 hover:to-pink-700 transition transform hover:scale-105"
+    >
+      Leave game
+    </button>
+  </div>
+</header>
+<div id="screens-wrap" class="flex-1 w-full flex items-center justify-center p-4">
     <div id="screen-login" class="screen bg-white rounded-2xl shadow-2xl p-8">
       <div class="text-center mb-8">
         <h1 class="text-4xl font-bold text-gray-800 mb-2">Rock Paper Scissors</h1>

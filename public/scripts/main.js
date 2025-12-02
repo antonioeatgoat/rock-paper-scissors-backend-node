@@ -9,7 +9,6 @@ let state = {
 }
 
 function render() {
-  //displayScreen(state.screen);
 
   // Render Screen
   _hideByClass('.screen');
@@ -22,16 +21,32 @@ function render() {
   // Render opponent nickname
   document.querySelectorAll('.opponent-nickname')
     .forEach(element => element.textContent = state.opponentNickname);
+
+  if (state.screen === 'login' || state.nickname === '') {
+    _hideById('game-header');
+  } else {
+    _showById('game-header');
+  }
+
+  if (state.screen === 'playing') {
+    _hideById('logout-btn');
+    _showById('exit-game-btn');
+  } else {
+    _hideById('exit-game-btn');
+    _showById('logout-btn');
+  }
 }
 
 document.addEventListener("DOMContentLoaded",  main);
 
 function main() {
-  const lastScreen = _getLastScreen();
+  _loadStoredState()
 
-  if (lastScreen && lastScreen !== 'login') {
+  if (state.screen !== 'login' && state.screen !== 'lobby') {
     _initializeWebSocket();
   }
+
+  render();
 }
 
 // Handle nickname submission
@@ -63,10 +78,8 @@ async function signUp() {
       return;
     }
 
-    state.screen = 'lobby';
     state.nickname = nickname;
-
-    render()
+    _changeScreen('lobby')
   } catch (error) {
     console.error('Error logging in:', error);
   }
@@ -183,7 +196,7 @@ function _initializeWebSocket() {
 
 function _changeScreen(screen) {
   state.screen = screen;
-  _storeLastScreen(screen);
+  _storeState();
   render();
 }
 
@@ -192,12 +205,29 @@ function _cleanPlayingScreen() {
   _hideById('choosen-move-container');
 }
 
-function _storeLastScreen(screen) {
-  window.localStorage.setItem('lastScreen', screen);
+function _storeState() {
+  window.localStorage.setItem(
+    'state',
+    JSON.stringify({screen: state.screen, nickname: state.nickname})
+  );
 }
 
-function _getLastScreen() {
-  return window.localStorage.getItem('lastScreen');
+function _loadStoredState() {
+  const storedState = JSON.parse(window.localStorage.getItem('state'));
+
+  if (storedState instanceof Object && 'screen' in storedState && 'nickname' in storedState) {
+    state.screen = storedState.screen;
+    state.nickname = storedState.nickname;
+  }
+}
+
+function _resetState() {
+  state = {
+    screen: 'login',
+    socket: null,
+    nickname: '',
+    opponentNickname: '',
+  }
 }
 
 function _displayRegisterError(message) {
