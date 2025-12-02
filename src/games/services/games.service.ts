@@ -9,6 +9,9 @@ import { GatewayEmitterService } from './gateway-emitter.service';
 import { AllowedMove } from '../enums/allowed-move.enum';
 import { PlayersSocketMapper } from './players-socket-mapper.service';
 import { GamesRepositoryService } from '../games-repository.service';
+import { AuthError } from '../socket-errors/auth.error';
+import { GameNotFoundError } from '../socket-errors/game-not-found.error';
+import { EndedGameError } from '../socket-errors/ended-game.error';
 
 @Injectable()
 export class GamesService {
@@ -74,7 +77,7 @@ export class GamesService {
     const player = this.fetchExistingPlayer(user);
 
     if (!player) {
-      this.emitter.emitError(socket, 'Cannot find a valid player');
+      this.emitter.emitError(socket, new AuthError());
       this.logger.warn(
         `User ${user.id()} made a move but has no player associated`,
       );
@@ -84,7 +87,7 @@ export class GamesService {
     const game = await this.fetchRunningGame(player);
 
     if (!game) {
-      this.emitter.emitError(socket, 'Cannot find a valid game');
+      this.emitter.emitError(socket, new GameNotFoundError());
       this.logger.warn(
         `User ${user.id()} made a move but has no game associated`,
       );
@@ -95,7 +98,7 @@ export class GamesService {
       this.logger.warn(
         `User ${user.id()} made a move but the game is finished already.`,
       );
-      this.emitter.emitError(socket, 'This game is finished already');
+      this.emitter.emitError(socket, new EndedGameError());
       return;
     }
 
@@ -123,7 +126,8 @@ export class GamesService {
     const player = this.fetchExistingPlayer(user);
 
     if (!player) {
-      this.emitter.emitError(socket, 'Cannot find a valid player');
+      // TODO Change error?
+      this.emitter.emitError(socket, new AuthError());
       this.logger.warn(
         `User ${user.id()} is trying to get a game no player associated.`,
       );

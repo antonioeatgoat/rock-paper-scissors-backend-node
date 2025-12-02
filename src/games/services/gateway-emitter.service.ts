@@ -4,6 +4,7 @@ import { ResponseSerializerService } from './response-serializer.service';
 import { Socket } from 'socket.io';
 import { Player } from '../player/player';
 import { PlayersSocketMapper } from './players-socket-mapper.service';
+import { GenericSocketError } from '../socket-errors/generic-socket.error';
 
 @Injectable()
 export class GatewayEmitterService {
@@ -46,15 +47,15 @@ export class GatewayEmitterService {
     }
   }
 
-  emitError(client: Socket, message: string): void {
+  emitError(client: Socket, error: GenericSocketError): void {
     const eventName = 'error';
     this.logger.debug(
       'WebSocket emits: ' + eventName,
       'Socket ID: ' + client.id,
-      { error: message },
+      { error: error.message() },
     );
 
-    client.emit(eventName, this.responseSerializer.error(message));
+    client.emit(eventName, this.responseSerializer.error(error));
   }
 
   private logDebug(event: string, player: Player, data: any = {}): void {

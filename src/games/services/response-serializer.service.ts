@@ -1,6 +1,7 @@
 import { Player } from '../player/player';
 import { Game } from '../game/game';
 import { Injectable } from '@nestjs/common';
+import { GenericSocketError } from '../socket-errors/generic-socket.error';
 
 @Injectable()
 export class ResponseSerializerService {
@@ -42,9 +43,10 @@ export class ResponseSerializerService {
     };
   }
 
-  error(error: string) {
+  error(error: GenericSocketError) {
     return {
-      error: error,
+      error: error.code(),
+      message: error.message(),
     };
   }
 }

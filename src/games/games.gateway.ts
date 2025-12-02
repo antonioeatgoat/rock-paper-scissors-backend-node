@@ -17,6 +17,8 @@ import { AuthenticatedGuard } from '../auth/guards/authenticated.guard';
 import { User } from '../users/user/user';
 import { User as UserDecorator } from '../auth/decorators/user.decorator';
 import { AllowedMove } from './enums/allowed-move.enum';
+import { AuthError } from './socket-errors/auth.error';
+import { InvalidMoveError } from './socket-errors/invalid-move.error';
 
 @WebSocketGateway()
 export class GamesGateway implements OnGatewayConnection, OnGatewayDisconnect {
@@ -37,7 +39,7 @@ export class GamesGateway implements OnGatewayConnection, OnGatewayDisconnect {
     const user = await this.accessTokenService.extractUserFromWsClient(client);
 
     if (user === null) {
-      this.emitter.emitError(client, 'Cannot authenticate current user.');
+      this.emitter.emitError(client, new AuthError());
       this.disconnect(client);
       return;
     }
@@ -67,7 +69,7 @@ export class GamesGateway implements OnGatewayConnection, OnGatewayDisconnect {
     this.logReceivedEvent('make_move');
 
     if (!Object.values(AllowedMove).includes(move as AllowedMove)) {
-      this.emitter.emitError(client, 'This move is not valid');
+      this.emitter.emitError(client, new InvalidMoveError());
       this.logger.warn('Received a not valid move');
       return;
     }

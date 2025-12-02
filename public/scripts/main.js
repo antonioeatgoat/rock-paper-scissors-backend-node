@@ -187,6 +187,11 @@ function _initializeWebSocket() {
 
   socket.on('error', function (data) {
     console.error('WebSocket error:', data);
+
+    if (data?.error === 'auth_error') {
+      _resetState();
+      _changeScreen('login');
+    }
   });
 
   socket.on('disconnect', function () {
