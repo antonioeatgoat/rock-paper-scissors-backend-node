@@ -42,11 +42,47 @@ document.addEventListener("DOMContentLoaded",  main);
 function main() {
   _loadStoredState()
 
-  if (state.screen !== 'login' && state.screen !== 'lobby') {
-    _initializeWebSocket();
+  if (state.nickname === '' || state.screen === 'login') {
+    _resetState();
+    _changeScreen('login')
+    return;
   }
 
-  render();
+  const previousScreen = state.screen;
+  _changeScreen('loading')
+  _refreshPreviousStatus(previousScreen);
+}
+
+async function _refreshPreviousStatus(previousScreen) {
+  const response = await fetch(API_BASE_URL + '/games/current-game', {
+    method: 'GET',
+    headers: { 'Content-Type': 'application/json' }
+  });
+
+  const data = await response.json();
+
+  if (response.status !== 200) {
+    _resetState();
+    _changeScreen('login');
+    return;
+  }
+
+  if (data.status === 'idle') {
+    _changeScreen(previousScreen !== 'loading' ? previousScreen : 'lobby');
+    return;
+  }
+
+  _initializeWebSocket();
+
+  const status = data?.status ?? '';
+
+  if (status === 'waiting') {
+    findGame();
+  } else if (status === 'playing') {
+    _renderPlayingGame(data);
+  } else {
+    _renderFinishedGame(data);
+  }
 }
 
 // Handle nickname submission
@@ -90,6 +126,8 @@ function findGame() {
   if (!state.socket) {
     _initializeWebSocket();
   }
+
+  _emit('search_game');
 }
 
 function makeMove(move) {
@@ -98,12 +136,9 @@ function makeMove(move) {
     return;
   }
 
-  _hideById('moves-container');
-  _updateTextById('choosen-move', move);
-  _showById('choosen-move-container');
+  _renderMoveSelected(move);
 
-  console.debug('Sending `make_move` event.');
-  state.socket.emit('make_move', move);
+  _emit('make_move', move);
 }
 
 function playAgain() {
@@ -112,21 +147,8 @@ function playAgain() {
     return;
   }
 
-  console.debug('Sending `play_again` event.');
-  state.socket.emit('play_again');
+  _emit('play_again');
 }
-
-// function exitGame() {
-//   if (state.screen !== 'playing') {
-//     console.warn('Trying to send `exit_Game` but current screen is wrong.');
-//     return;
-//   }
-//
-//   _changeScreen('lobby');
-//
-//   console.debug('Sending `exit_game` event.');
-//   state.socket.emit('exit_game');
-// }
 
 function _initializeWebSocket() {
   const socket = io(WS_URL);
@@ -143,26 +165,11 @@ function _initializeWebSocket() {
     _changeScreen('waiting');
   });
 
-  socket.on('game_started', function (data) {
+  socket.on('game_joined', function (data) {
     console.debug('Game joined');
     console.debug(data);
 
-    _cleanPlayingScreen();
-
-    state.opponentNickname = data?.opponent ?? '';
-    _changeScreen('playing');
-  });
-
-  socket.on('game_rejoined', function (data) {
-    console.debug('Game recovered');
-    console.debug(data);
-
-    // TODO Getting move selected if already done
-
-    _cleanPlayingScreen();
-
-    state.opponentNickname = data?.opponent ?? '';
-    _changeScreen('playing');
+    _renderPlayingGame(data);
   });
 
   socket.on('game_finished', function (data) {
@@ -208,6 +215,45 @@ function _changeScreen(screen) {
 function _cleanPlayingScreen() {
   _showById('moves-container');
   _hideById('choosen-move-container');
+}
+
+function _renderPlayingGame(data) {
+  _cleanPlayingScreen();
+
+  state.opponentNickname = data?.opponent ?? '';
+  _changeScreen('playing');
+
+  if (data?.yourMove) {
+    _renderMoveSelected(data.yourMove)
+  }
+}
+
+function _renderFinishedGame(data) {
+  _updateTextById('your-move', data.yourMove)
+  _updateTextById('opponent-move', data.opponentMove)
+
+  _hideByClass('.game-result')
+
+  if (data.draw === true) {
+    _showById('game-result-tie')
+  } else if (data.winner === true) {
+    _showById('game-result-won')
+  } else {
+    _showById('game-result-lost')
+  }
+
+  _changeScreen('game-finished');
+}
+
+function _renderMoveSelected(move) {
+  _hideById('moves-container');
+  _updateTextById('choosen-move', move);
+  _showById('choosen-move-container');
+}
+
+function _emit(event, data) {
+  console.debug(`Sending '${event}' event.`);
+  state.socket.emit(event, data);
 }
 
 function _storeState() {

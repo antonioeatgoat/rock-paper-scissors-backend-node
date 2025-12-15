@@ -7,11 +7,12 @@ import { PlayerStatus } from '../player/player-status.enum';
 import { Game } from '../game/game';
 import { GatewayEmitterService } from './gateway-emitter.service';
 import { AllowedMove } from '../enums/allowed-move.enum';
-import { PlayersSocketMapper } from './players-socket-mapper.service';
 import { GamesRepositoryService } from '../games-repository.service';
-import { AuthError } from '../socket-errors/auth.error';
 import { GameNotFoundError } from '../socket-errors/game-not-found.error';
 import { EndedGameError } from '../socket-errors/ended-game.error';
+import { PlayerSessionService } from './player-session.service';
+import { GameStatus } from '../game/game-status';
+import { PlayerWithMeta } from '../player/player-with-meta';
 
 @Injectable()
 export class GamesService {
@@ -19,101 +20,90 @@ export class GamesService {
 
   constructor(
     private readonly repository: GamesRepositoryService,
+    private readonly playerSession: PlayerSessionService,
     private readonly matchmaking: MatchmakingService,
     private readonly emitter: GatewayEmitterService,
-    private readonly socketMapper: PlayersSocketMapper,
   ) {}
 
-  connectUser(user: User, client: Socket): Player {
-    const existingPlayer = this.fetchExistingPlayer(user);
-
-    if (existingPlayer) {
-      this.socketMapper.updateSocket(existingPlayer, client);
-
-      return existingPlayer;
-    }
-
-    const newPlayer = new Player(
-      user.id(),
-      user.nickname(),
-      // client,
-      PlayerStatus.WAITING,
-    );
-
-    this.socketMapper.updateSocket(newPlayer, client);
-
-    this.matchmaking.insertPlayer(newPlayer);
-
-    return newPlayer;
-  }
-
-  async handleSearchingGame(player: Player) {
-    const existingGame = await this.fetchRunningGame(player);
-
-    if (existingGame) {
-      this.emitter.emitGameRejoined(existingGame, player);
-      return;
-    }
-
-    const opponent = this.matchmaking.findOpponent(player);
-
-    if (opponent === undefined) {
-      player.status = PlayerStatus.WAITING;
-      this.matchmaking.updatePlayer(player);
-      this.emitter.emitWaitingForOpponent(player);
-      return;
-    }
-
-    // If not: create game for user and then join.
-    const newGame = await this.matchmaking.createNewGameForPlayers([
-      player,
-      opponent,
-    ]);
-
-    this.emitter.emitGameStarted(newGame);
-  }
-
-  async handleMove(socket: Socket, user: User, move: AllowedMove) {
-    const player = this.fetchExistingPlayer(user);
-
-    if (!player) {
-      this.emitter.emitError(socket, new AuthError());
-      this.logger.warn(
-        `User ${user.id()} made a move but has no player associated`,
+  connectUser(user: User, client: Socket): PlayerWithMeta {
+    if (!this.playerSession.playerExists(user.id())) {
+      return this.playerSession.saveNewPlayer(
+        user.id(),
+        user.nickname(),
+        client,
       );
+    }
+
+    const player = this.playerSession.getPlayerWithMeta(user.id());
+    player.changeClient(client);
+    this.playerSession.savePlayer(player);
+
+    this.logger.debug('Connecting existing player: ', player.toObject());
+
+    return player;
+  }
+
+  async handleSearchingGame(player: PlayerWithMeta) {
+    if (player.isPLaying()) {
+      const existingGame = await this.currentGameOfPlayer(player.shrink());
+
+      if (existingGame) {
+        this.emitter.emitGameJoined(existingGame, player.shrink());
+        this.logger.warn(
+          'An user re-joined an existing game in an expected way',
+          { user: player.id(), game: existingGame.id() },
+        );
+        return;
+      }
+
+      this.logger.debug(
+        "Player had status PLAYING but isn't in any running game. Resetting his status",
+        { user: player.id() },
+      );
+
+      player.changeStatus(PlayerStatus.IDLE);
+      this.playerSession.savePlayer(player);
+    }
+
+    const newGame = await this.matchmaking.searchGame(player);
+
+    if (!newGame) {
+      this.emitter.emitWaitingForOpponent(player.shrink());
       return;
     }
 
-    const game = await this.fetchRunningGame(player);
+    this.emitter.emitGameJoined(newGame);
+  }
+
+  async handleMove(socket: Socket, player: PlayerWithMeta, move: AllowedMove) {
+    const game = await this.currentGameOfPlayer(player.shrink());
 
     if (!game) {
       this.emitter.emitError(socket, new GameNotFoundError());
       this.logger.warn(
-        `User ${user.id()} made a move but has no game associated`,
+        `User ${player.id()} made a move but has no game associated`,
       );
       return;
     }
 
     if (game.isFinished()) {
       this.logger.warn(
-        `User ${user.id()} made a move but the game is finished already.`,
+        `User ${player.id()} made a move but the game is finished already.`,
       );
       this.emitter.emitError(socket, new EndedGameError());
       return;
     }
 
-    game.addMove({ player: player, move: move });
+    game.addMove({ player: player.shrink(), move: move });
     await this.repository.update(game);
 
     if (!game.isFinished()) {
       this.logger.debug(`Player made a move, waiting for the opponent`, {
         gameId: game.id(),
-        playerId: player.id,
+        playerId: player.id(),
       });
       return;
     }
-
-    // const winner = game.theWinner();
 
     this.emitter.emitGameFinished(game);
     this.logger.debug(`Game is finished`, {
@@ -122,23 +112,15 @@ export class GamesService {
     });
   }
 
-  async handlePlayAgain(socket: Socket, user: User) {
-    const player = this.fetchExistingPlayer(user);
-
-    if (!player) {
-      // TODO Change error?
-      this.emitter.emitError(socket, new AuthError());
-      this.logger.warn(
-        `User ${user.id()} is trying to get a game no player associated.`,
-      );
-      return;
-    }
-
+  async handlePlayAgain(player: PlayerWithMeta) {
     await this.handleSearchingGame(player);
   }
 
-  private async fetchRunningGame(player: Player): Promise<Game | undefined> {
-    const game = await this.matchmaking.currentGameOfPlayer(player);
+  async currentGameOfPlayer(player: Player): Promise<Game | null> {
+    const games = await this.repository.findByPlayer(player);
+    const game =
+      games.find((game) => game.status() === GameStatus.PLAYING) ?? null;
+
     if (game) {
       this.logger.debug('Retrieved exisitng game.', game.toObject());
     } else {
@@ -149,15 +131,5 @@ export class GamesService {
     }
 
     return game;
-  }
-
-  private fetchExistingPlayer(user: User): Player | undefined {
-    const player = this.matchmaking.retrievePlayer(user.id());
-
-    if (player instanceof Player) {
-      this.logger.debug('Retrieved existing player.', player.toObject());
-    }
-
-    return player;
   }
 }

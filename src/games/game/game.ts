@@ -20,11 +20,11 @@ export class Game {
 
   hasPlayerId(playerId: string) {
     // TODO remove?
-    return [this._players[0].id, this._players[1].id].includes(playerId);
+    return [this._players[0].id(), this._players[1].id()].includes(playerId);
   }
 
   hasPlayer(player: Player) {
-    return this.hasPlayerId(player.id);
+    return this.hasPlayerId(player.id());
   }
 
   status(): GameStatus {
@@ -32,11 +32,11 @@ export class Game {
   }
 
   opponentOf(player: Player) {
-    if (this._players[0].id === player.id) {
+    if (this._players[0].id() === player.id()) {
       return this._players[1];
     }
 
-    if (this._players[1].id === player.id) {
+    if (this._players[1].id() === player.id()) {
       return this._players[0];
     }
 
@@ -52,7 +52,7 @@ export class Game {
       throw new Error('This player is not in this game');
     }
 
-    this._moves.set(playerMove.player.id, playerMove.move);
+    this._moves.set(playerMove.player.id(), playerMove.move);
 
     if (this._moves.size === 2) {
       this._status = GameStatus.ENDED;
@@ -60,7 +60,7 @@ export class Game {
   }
 
   moveOf(player: Player): AllowedMove | null {
-    return this._moves.get(player.id) ?? null;
+    return this._moves.get(player.id()) ?? null;
   }
 
   isFinished(): boolean {
@@ -70,8 +70,8 @@ export class Game {
   theWinner(): Player | null {
     const [p1, p2] = this._players;
 
-    const m1 = this._moves.get(p1.id);
-    const m2 = this._moves.get(p2.id);
+    const m1 = this._moves.get(p1.id());
+    const m2 = this._moves.get(p2.id());
 
     if (!m1 || !m2 || m1 === m2) {
       return null;

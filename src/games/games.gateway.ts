@@ -8,18 +8,21 @@ import {
   WebSocketServer,
 } from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
-import { Logger, UseGuards } from '@nestjs/common';
+import { Logger, UseGuards, UseInterceptors } from '@nestjs/common';
 import { SocketWithUser } from '../auth/interfaces/socket-with-user';
 import { AccessTokenService } from '../auth/services/AccessTokenService';
 import { GamesService } from './services/games.service';
 import { GatewayEmitterService } from './services/gateway-emitter.service';
 import { AuthenticatedGuard } from '../auth/guards/authenticated.guard';
-import { User } from '../users/user/user';
-import { User as UserDecorator } from '../auth/decorators/user.decorator';
+import { Player as PlayerDecorator } from './decorators/player.decorator';
 import { AllowedMove } from './enums/allowed-move.enum';
 import { AuthError } from './socket-errors/auth.error';
 import { InvalidMoveError } from './socket-errors/invalid-move.error';
+import { PlayerInterceptor } from './interceptors/player.interceptor';
+import { ListenedWebsocketEvent as Event } from './enums/listened-websocket-event.enum';
+import { PlayerWithMeta } from './player/player-with-meta';
 
+@UseInterceptors(PlayerInterceptor)
 @WebSocketGateway()
 export class GamesGateway implements OnGatewayConnection, OnGatewayDisconnect {
   @WebSocketServer()
@@ -50,23 +53,29 @@ export class GamesGateway implements OnGatewayConnection, OnGatewayDisconnect {
     });
     client.user = user;
 
-    const player = this.gamesService.connectUser(user, client);
-
-    await this.gamesService.handleSearchingGame(player);
+    this.gamesService.connectUser(user, client);
   }
 
   handleDisconnect(client: Socket) {
     this.logger.debug('Disconnecting: ' + client.id);
   }
 
-  @SubscribeMessage('make_move')
+  @SubscribeMessage(Event.SEARCH_GAME)
+  @UseGuards(AuthenticatedGuard)
+  async handleSearchGame(@PlayerDecorator() player: PlayerWithMeta) {
+    this.logReceivedEvent(Event.SEARCH_GAME);
+
+    await this.gamesService.handleSearchingGame(player);
+  }
+
+  @SubscribeMessage(Event.MAKE_MOVE)
   @UseGuards(AuthenticatedGuard)
   async handleMove(
     @ConnectedSocket() client: Socket,
     @MessageBody() move: string,
-    @UserDecorator() user: User,
+    @PlayerDecorator() player: PlayerWithMeta,
   ) {
-    this.logReceivedEvent('make_move');
+    this.logReceivedEvent(Event.MAKE_MOVE);
 
     if (!Object.values(AllowedMove).includes(move as AllowedMove)) {
       this.emitter.emitError(client, new InvalidMoveError());
@@ -74,18 +83,16 @@ export class GamesGateway implements OnGatewayConnection, OnGatewayDisconnect {
       return;
     }
 
-    await this.gamesService.handleMove(client, user, move as AllowedMove);
+    await this.gamesService.handleMove(client, player, move as AllowedMove);
   }
 
-  @SubscribeMessage('play_again')
+  // TODO This is just a placeholder. It must implement the play again with the same user
+  @SubscribeMessage(Event.PLAY_AGAIN)
   @UseGuards(AuthenticatedGuard)
-  async handlePlayAgain(
-    @ConnectedSocket() client: Socket,
-    @UserDecorator() user: User,
-  ) {
-    this.logReceivedEvent('make_move');
+  async handlePlayAgain(@PlayerDecorator() player: PlayerWithMeta) {
+    this.logReceivedEvent(Event.PLAY_AGAIN);
 
-    await this.gamesService.handlePlayAgain(client, user);
+    await this.gamesService.handlePlayAgain(player);
   }
 
   private disconnect(client: Socket) {

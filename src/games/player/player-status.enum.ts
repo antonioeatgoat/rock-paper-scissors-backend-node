@@ -1,5 +1,4 @@
 export enum PlayerStatus {
-  IDLE = 'idle', // TODO Remove?
-  WAITING = 'waiting',
+  IDLE = 'idle',
   PLAYING = 'playing',
 }

@@ -4,14 +4,16 @@ import { GamesGateway } from './games.gateway';
 import { AuthModule } from '../auth/auth.module';
 import { GamesService } from './services/games.service';
 import { MatchmakingService } from './services/matchmaking.service';
-import { ResponseSerializerService } from './services/response-serializer.service';
+import { ResponseBuilderService } from './services/response-builder.service';
 import { GatewayEmitterService } from './services/gateway-emitter.service';
-import { PlayersSocketMapper } from './services/players-socket-mapper.service';
 import { GamesRepositoryService } from './games-repository.service';
 import { InMemoryRepository } from './repositories/in-memory.repository';
+import { PlayerSessionService } from './services/player-session.service';
+import { GamesController } from './games.controller';
 
 @Module({
   imports: [AuthModule, UsersModule],
+  controllers: [GamesController],
   providers: [
     {
       provide: GamesRepositoryService,
@@ -20,9 +22,9 @@ import { InMemoryRepository } from './repositories/in-memory.repository';
     GamesGateway,
     GamesService,
     GatewayEmitterService,
-    ResponseSerializerService,
+    ResponseBuilderService,
     MatchmakingService,
-    PlayersSocketMapper,
+    PlayerSessionService,
   ],
 })
 export class GamesModule {}

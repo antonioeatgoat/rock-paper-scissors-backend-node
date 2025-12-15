@@ -1,81 +1,72 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { Game } from '../game/game';
-import { ResponseSerializerService } from './response-serializer.service';
+import { ResponseBuilderService } from './response-builder.service';
 import { Socket } from 'socket.io';
 import { Player } from '../player/player';
-import { PlayersSocketMapper } from './players-socket-mapper.service';
 import { GenericSocketError } from '../socket-errors/generic-socket.error';
+import { EmittedWebsocketEvent as Event } from '../enums/emitted-websocket-event.enum';
+import { PlayerSessionService } from './player-session.service';
 
 @Injectable()
 export class GatewayEmitterService {
   private readonly logger = new Logger(GatewayEmitterService.name);
 
   constructor(
-    private readonly socketMapper: PlayersSocketMapper,
-    private readonly responseSerializer: ResponseSerializerService,
+    private readonly responseBuilder: ResponseBuilderService,
+    private readonly playerSession: PlayerSessionService,
   ) {}
 
-  emitGameStarted(game: Game): void {
+  emitGameJoined(game: Game, receiver: Player | null = null): void {
     for (const player of game.players()) {
+      if (receiver && receiver.id() !== player.id()) {
+        continue;
+      }
+
       this.emitToPlayer(
         player,
-        'game_started',
-        this.responseSerializer.connectNewGame(game, player),
+        Event.GAME_JOINED,
+        this.responseBuilder.connectNewGame(game, player),
       );
     }
   }
 
-  emitGameRejoined(game: Game, player: Player): void {
-    this.emitToPlayer(
-      player,
-      'game_rejoined',
-      this.responseSerializer.connectExistingGame(game, player),
-    );
-  }
-
   emitWaitingForOpponent(player: Player): void {
-    this.emitToPlayer(player, 'waiting_for_opponent');
+    this.emitToPlayer(player, Event.WAITING_FOR_OPPONENT);
   }
 
   emitGameFinished(game: Game): void {
     for (const player of game.players()) {
       this.emitToPlayer(
         player,
-        'game_finished',
-        this.responseSerializer.gameFinished(game, player),
+        Event.GAME_FINISHED,
+        this.responseBuilder.gameFinished(game, player),
       );
     }
   }
 
   emitError(client: Socket, error: GenericSocketError): void {
-    const eventName = 'error';
+    const eventName = Event.ERROR;
     this.logger.debug(
       'WebSocket emits: ' + eventName,
       'Socket ID: ' + client.id,
       { error: error.message() },
     );
 
-    client.emit(eventName, this.responseSerializer.error(error));
+    client.emit(eventName, this.responseBuilder.error(error));
   }
 
   private logDebug(event: string, player: Player, data: any = {}): void {
     this.logger.debug(
       'WebSocket emits: ' + event,
-      'Player ID: ' + player.id,
+      'Player ID: ' + player.id(),
       JSON.parse(JSON.stringify(data)),
     );
   }
 
   private emitToPlayer(player: Player, event: string, data: any = {}) {
-    this.logDebug(event, player, data);
+    const playerWithMeta = this.playerSession.getPlayerWithMeta(player.id());
 
-    const socket = this.socketMapper.getSocket(player);
-
-    if (socket === undefined) {
-      this.logger.error('There is no socket stored for the given user');
-      return;
-    }
-
-    socket.emit(event, data);
+    this.logDebug(event, playerWithMeta.shrink(), data);
+    playerWithMeta.client().emit(event, data);
   }
 }

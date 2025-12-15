@@ -3,20 +3,21 @@ import { Game } from '../game/game';
 import { Injectable } from '@nestjs/common';
 import { GenericSocketError } from '../socket-errors/generic-socket.error';
 
+//TODO Some methods could be grouped and simplified
 @Injectable()
-export class ResponseSerializerService {
+export class ResponseBuilderService {
   connectNewGame(game: Game, player: Player) {
     return {
-      opponent: game.opponentOf(player).nickname,
+      opponent: game.opponentOf(player).nickname(),
     };
   }
 
   connectExistingGame(game: Game, player: Player) {
-    // TODO should be possible to support connection to existing games?
     return {
-      opponent: game.opponentOf(player).nickname,
-      // gameStatus: game.status(),
-      // winner: game.theWinner()?.toObject(),
+      status: 'playing',
+      opponent: game.opponentOf(player).nickname(),
+      yourMove: game.moveOf(player) ?? null,
+      opponentMove: game.moveOf(game.opponentOf(player)) ?? null,
       startedAt: null, // TODO implement
     };
   }
@@ -26,7 +27,7 @@ export class ResponseSerializerService {
 
     if (winner === null) {
       return {
-        gameStatus: 'finished',
+        status: 'finished',
         yourMove: game.moveOf(receiver) ?? '',
         opponentMove: game.moveOf(game.opponentOf(receiver)) ?? '',
         winner: false,
@@ -35,10 +36,10 @@ export class ResponseSerializerService {
     }
 
     return {
-      gameStatus: 'finished',
+      status: 'finished',
       yourMove: game.moveOf(receiver) ?? '',
       opponentMove: game.moveOf(game.opponentOf(receiver)) ?? '',
-      winner: receiver.id === winner.id,
+      winner: receiver.id() === winner.id(),
       draw: false,
     };
   }

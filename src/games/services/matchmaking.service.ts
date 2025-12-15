@@ -1,56 +1,60 @@
-import { Injectable } from '@nestjs/common';
-import { Player } from '../player/player';
+import { Injectable, Logger } from '@nestjs/common';
 import { Game } from '../game/game';
-import { GameStatus } from '../game/game-status';
 import { PlayerStatus } from '../player/player-status.enum';
 import { GamesRepositoryService } from '../games-repository.service';
+import { PlayerSessionService } from './player-session.service';
+import { PlayerWithMeta } from '../player/player-with-meta';
 
 @Injectable()
 export class MatchmakingService {
-  private readonly players: Player[] = []; // TODO Convert to Map
+  private readonly logger = new Logger(MatchmakingService.name);
+  private waitingPlayer: PlayerWithMeta | null = null;
 
-  constructor(private readonly repository: GamesRepositoryService) {}
+  constructor(
+    private readonly playerSession: PlayerSessionService,
+    private readonly gamesRepository: GamesRepositoryService,
+  ) {}
 
-  insertPlayer(player: Player) {
-    this.players.push(player);
-  }
-
-  updatePlayer(player: Player): boolean {
-    const index = this.players.findIndex((g) => g.id === player.id);
-    if (index === -1) {
-      return false;
+  async searchGame(player: PlayerWithMeta): Promise<Game | null> {
+    if (player.isPLaying()) {
+      this.logger.fatal(
+        'Player has status PLAYING but he is searching for a new game',
+        {
+          player: player,
+        },
+      );
+      throw new Error('This player cannot search for a new game');
     }
 
-    this.players[index] = player;
-    return true;
+    if (!this.waitingPlayer) {
+      this.waitingPlayer = player;
+      return Promise.resolve(null);
+    }
+
+    if (this.waitingPlayer.id() === player.id()) {
+      return Promise.resolve(null);
+    }
+
+    return await this.createNewGameForPlayers([player, this.waitingPlayer]);
   }
 
-  retrievePlayer(playerId: string): Player | undefined {
-    return this.players.find((player) => player.id === playerId);
-  }
-
-  async currentGameOfPlayer(player: Player): Promise<Game | undefined> {
-    const games = await this.repository.findByPlayer(player);
-
-    return games.find((game) => game.status() === GameStatus.PLAYING);
-  }
-
-  findOpponent(player: Player): Player | undefined {
-    return this.players.find(
-      (p: Player) => p.status === PlayerStatus.WAITING && player.id !== p.id,
-    );
-  }
-
-  async createNewGameForPlayers(players: [Player, Player]): Promise<Game> {
+  private async createNewGameForPlayers(
+    players: [PlayerWithMeta, PlayerWithMeta],
+  ): Promise<Game> {
     for (const player of players) {
-      player.status = PlayerStatus.PLAYING;
-      this.updatePlayer(player);
+      player.changeStatus(PlayerStatus.PLAYING);
+      this.playerSession.savePlayer(player);
     }
 
-    const newGame = new Game(players);
+    const newGame = new Game([players[0].shrink(), players[1].shrink()]);
+    await this.gamesRepository.insert(newGame);
 
-    await this.repository.insert(newGame);
+    this.cleanWaitingQueue();
 
     return newGame;
+  }
+
+  private cleanWaitingQueue() {
+    this.waitingPlayer = null;
   }
 }

@@ -7,6 +7,6 @@ export class EndedGameError extends GenericSocketError {
   }
 
   message(): string {
-    return 'Trinew Eneed to interact with an ended game.';
+    return 'Trying to interact with an ended game.';
   }
 }
