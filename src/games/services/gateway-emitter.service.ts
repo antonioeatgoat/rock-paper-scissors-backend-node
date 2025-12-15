@@ -45,28 +45,29 @@ export class GatewayEmitterService {
   }
 
   emitError(client: Socket, error: GenericSocketError): void {
-    const eventName = Event.ERROR;
-    this.logger.debug(
-      'WebSocket emits: ' + eventName,
-      'Socket ID: ' + client.id,
-      { error: error.message() },
-    );
+    this.logger.debug('WebSocket error', {
+      error: error.message(),
+      socket: client.id,
+    });
 
-    client.emit(eventName, this.responseBuilder.error(error));
-  }
-
-  private logDebug(event: string, player: Player, data: any = {}): void {
-    this.logger.debug(
-      'WebSocket emits: ' + event,
-      'Player ID: ' + player.id(),
-      JSON.parse(JSON.stringify(data)),
-    );
+    client.emit('error', this.responseBuilder.error(error));
   }
 
   private emitToPlayer(player: Player, event: string, data: any = {}) {
     const playerWithMeta = this.playerSession.getPlayerWithMeta(player.id());
 
-    this.logDebug(event, playerWithMeta.shrink(), data);
+    this.logger.debug(`WebSocket emits: ${event}`, {
+      player: player.id(),
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+      data: JSON.parse(JSON.stringify(data)),
+    });
+
+    this.logger.debug(`WebSocket emits: ${event}`, {
+      player: player.id(),
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+      data: data,
+    });
+
     playerWithMeta.client().emit(event, data);
   }
 }

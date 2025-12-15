@@ -27,18 +27,26 @@ export class GamesService {
 
   connectUser(user: User, client: Socket): PlayerWithMeta {
     if (!this.playerSession.playerExists(user.id())) {
-      return this.playerSession.saveNewPlayer(
+      const newPlayer = this.playerSession.saveNewPlayer(
         user.id(),
         user.nickname(),
         client,
       );
+
+      this.logger.debug('Connecting new player.', {
+        player: newPlayer.toJSON(),
+      });
+
+      return newPlayer;
     }
 
     const player = this.playerSession.getPlayerWithMeta(user.id());
     player.changeClient(client);
     this.playerSession.savePlayer(player);
 
-    this.logger.debug('Connecting existing player: ', player.toObject());
+    this.logger.debug('Connecting existing player.', {
+      player: player.toJSON(),
+    });
 
     return player;
   }
@@ -108,7 +116,7 @@ export class GamesService {
     this.emitter.emitGameFinished(game);
     this.logger.debug(`Game is finished`, {
       game: game.id(),
-      winner: game.theWinner()?.toObject(),
+      winner: game.theWinner()?.toJSON(),
     });
   }
 
@@ -122,11 +130,12 @@ export class GamesService {
       games.find((game) => game.status() === GameStatus.PLAYING) ?? null;
 
     if (game) {
-      this.logger.debug('Retrieved exisitng game.', game.toObject());
+      this.logger.debug('Retrieved exisitng game.', game.toJSON());
+      this.logger.debug(JSON.parse(JSON.stringify(game)));
     } else {
       this.logger.debug(
         'Cannot find an existing game for this player.',
-        player.toObject(),
+        player.toJSON(),
       );
     }
 

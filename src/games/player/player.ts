@@ -12,14 +12,10 @@ export class Player {
     return this._nickname;
   }
 
-  toObject() {
+  toJSON() {
     return {
       id: this._id,
       nickname: this._nickname,
     };
-  }
-
-  toJSON() {
-    return this.toObject();
   }
 }

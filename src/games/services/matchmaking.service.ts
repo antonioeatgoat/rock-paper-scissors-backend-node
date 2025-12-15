@@ -17,16 +17,19 @@ export class MatchmakingService {
 
   async searchGame(player: PlayerWithMeta): Promise<Game | null> {
     if (player.isPLaying()) {
-      this.logger.fatal(
+      this.logger.error(
         'Player has status PLAYING but he is searching for a new game',
         {
-          player: player,
+          player: player.toJSON(),
         },
       );
       throw new Error('This player cannot search for a new game');
     }
 
     if (!this.waitingPlayer) {
+      this.logger.verbose('Moving player in waiting queue', {
+        player: player.id(),
+      });
       this.waitingPlayer = player;
       return Promise.resolve(null);
     }

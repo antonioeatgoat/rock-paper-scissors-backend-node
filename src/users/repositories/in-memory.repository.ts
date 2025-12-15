@@ -7,17 +7,22 @@ export class InMemoryRepository extends UsersRepositoryService {
   private readonly users = new Map<string, User>();
 
   save(user: User): Promise<void> {
-    this.logger.verbose('Updating user', user.id());
+    this.logger.debug('Updating user', user.id());
+    this.logger.verbose('New user data', user);
 
     this.users.set(user.id(), user);
     return Promise.resolve();
   }
 
   findById(id: string): Promise<User | null> {
+    this.logger.verbose('Fetching user by id', id);
+
     return Promise.resolve(this.users.get(id) ?? null);
   }
 
   findByNickname(nickname: string): Promise<User | null> {
+    this.logger.verbose('Fetching user by nickname', nickname);
+
     for (const user of this.users.values()) {
       if (user.nickname() === nickname) {
         return Promise.resolve(user);

@@ -3,6 +3,7 @@ import {
   MessageBody,
   OnGatewayConnection,
   OnGatewayDisconnect,
+  OnGatewayInit,
   SubscribeMessage,
   WebSocketGateway,
   WebSocketServer,
@@ -24,7 +25,9 @@ import { PlayerWithMeta } from './player/player-with-meta';
 
 @UseInterceptors(PlayerInterceptor)
 @WebSocketGateway()
-export class GamesGateway implements OnGatewayConnection, OnGatewayDisconnect {
+export class GamesGateway
+  implements OnGatewayInit, OnGatewayConnection, OnGatewayDisconnect
+{
   @WebSocketServer()
   server: Server;
 
@@ -36,35 +39,41 @@ export class GamesGateway implements OnGatewayConnection, OnGatewayDisconnect {
     private readonly emitter: GatewayEmitterService,
   ) {}
 
+  afterInit() {
+    this.server.on('connection', (socket) => {
+      socket.onAny((event, ...args) => {
+        this.logger.debug(`WebSocket receives: ${event}`, args);
+      });
+    });
+  }
+
   async handleConnection(client: SocketWithUser) {
-    this.logger.debug('Websocket connection attempt..');
+    this.logger.verbose('Websocket connected.', { socket: client.id });
 
     const user = await this.accessTokenService.extractUserFromWsClient(client);
 
     if (user === null) {
+      this.logger.verbose('Cannot authenticate user.');
       this.emitter.emitError(client, new AuthError());
       this.disconnect(client);
       return;
     }
 
-    this.logger.debug('User connected', {
-      id: user.id(),
-      nickname: user.nickname(),
-    });
     client.user = user;
+    this.logger.verbose('Adding user object into socket client', {
+      user: user.id(),
+    });
 
     this.gamesService.connectUser(user, client);
   }
 
   handleDisconnect(client: Socket) {
-    this.logger.debug('Disconnecting: ' + client.id);
+    this.logger.verbose('Websocket connected.', { socket: client.id });
   }
 
   @SubscribeMessage(Event.SEARCH_GAME)
   @UseGuards(AuthenticatedGuard)
   async handleSearchGame(@PlayerDecorator() player: PlayerWithMeta) {
-    this.logReceivedEvent(Event.SEARCH_GAME);
-
     await this.gamesService.handleSearchingGame(player);
   }
 
@@ -75,11 +84,9 @@ export class GamesGateway implements OnGatewayConnection, OnGatewayDisconnect {
     @MessageBody() move: string,
     @PlayerDecorator() player: PlayerWithMeta,
   ) {
-    this.logReceivedEvent(Event.MAKE_MOVE);
-
     if (!Object.values(AllowedMove).includes(move as AllowedMove)) {
       this.emitter.emitError(client, new InvalidMoveError());
-      this.logger.warn('Received a not valid move');
+      this.logger.warn('Received a not valid move', { move: move });
       return;
     }
 
@@ -90,17 +97,11 @@ export class GamesGateway implements OnGatewayConnection, OnGatewayDisconnect {
   @SubscribeMessage(Event.PLAY_AGAIN)
   @UseGuards(AuthenticatedGuard)
   async handlePlayAgain(@PlayerDecorator() player: PlayerWithMeta) {
-    this.logReceivedEvent(Event.PLAY_AGAIN);
-
     await this.gamesService.handlePlayAgain(player);
   }
 
   private disconnect(client: Socket) {
-    this.logger.debug('Closing Websocket connection.');
+    this.logger.verbose('Closing Websocket connection.', { socket: client.id });
     client.disconnect();
-  }
-
-  private logReceivedEvent(event: string) {
-    this.logger.debug('Received event: ' + event);
   }
 }

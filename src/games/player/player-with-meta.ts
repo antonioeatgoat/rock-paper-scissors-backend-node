@@ -38,16 +38,12 @@ export class PlayerWithMeta {
     return new Player(this._id, this._nickname);
   }
 
-  toObject() {
+  toJSON() {
     return {
       id: this._id,
       nickname: this._nickname,
       status: this._status,
       socket: this._client.id,
     };
-  }
-
-  toJSON() {
-    return this.toObject();
   }
 }

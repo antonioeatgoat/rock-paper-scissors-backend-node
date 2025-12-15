@@ -88,23 +88,13 @@ export class Game {
     return p2;
   }
 
-  toObject() {
-    return {
-      id: this._id,
-      status: this._status,
-      players: [this._players[0].toObject(), this._players[1].toObject()],
-      moves: this._moves,
-      winner: this.theWinner()?.toObject(),
-    };
-  }
-
   toJSON() {
     return {
       id: this._id,
       status: this._status,
-      players: this._players,
+      players: [this._players[0].toJSON(), this._players[1].toJSON()],
       moves: this._moves,
-      winner: this.theWinner(),
+      winner: this.theWinner()?.toJSON(),
     };
   }
 }

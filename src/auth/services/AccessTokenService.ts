@@ -29,6 +29,10 @@ export class AccessTokenService {
   }
 
   storeAccessTokenInSession(res: Response, token: string) {
+    this.logger.verbose('Storing access token in cookie.', {
+      token: token,
+    });
+
     res.cookie(this.cookieName, token, {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
@@ -38,7 +42,7 @@ export class AccessTokenService {
   }
 
   extractUserFromHttpRequest(req: RequestWithUser): Promise<User | null> {
-    this.logger.debug('Extracting token from HTTP request.', {
+    this.logger.verbose('Extracting token from HTTP request.', {
       cookies: req?.cookies ?? [],
     });
 
@@ -48,7 +52,7 @@ export class AccessTokenService {
   }
 
   extractUserFromWsClient(client: Socket): Promise<User | null> {
-    this.logger.debug('Extracting token from Websocket client.', {
+    this.logger.verbose('Extracting token from Websocket client.', {
       cookies: client?.handshake?.headers?.cookie ?? '',
     });
 
