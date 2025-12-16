@@ -1,7 +1,6 @@
 import { Game } from '../game/game';
-import { Player } from '../player/player';
-import { GameStatus } from '../enums/game-status.enum';
-import { GamesRepositoryService } from '../games-repository.service';
+import { GamesRepositoryService } from './games-repository.service';
+import { QueryInterface } from './query.interface';
 
 export class InMemoryRepository extends GamesRepositoryService {
   private readonly games = new Map<string, Game>();
@@ -29,23 +28,21 @@ export class InMemoryRepository extends GamesRepositoryService {
     return Promise.resolve(this.games.get(id) ?? null);
   }
 
-  findByPlayer(player: Player): Promise<Game[]> {
+  find(query: QueryInterface): Promise<Game[]> {
     const games: Game[] = [];
     for (const game of this.games.values()) {
-      if (game.hasPlayer(player)) {
-        games.push(game);
+      if (query.playerId && !game.hasPlayer(query.playerId)) {
+        continue;
       }
-    }
 
-    return Promise.resolve(games);
-  }
+      if (query.status && game.status() !== query.status) {
+        continue;
+      }
 
-  // TODO remove?
-  findByStatus(gameStatus: GameStatus): Promise<Game[]> {
-    const games: Game[] = [];
-    for (const game of this.games.values()) {
-      if (game.status() === gameStatus) {
-        games.push(game);
+      games.push(game);
+
+      if (query.limit && games.length === query.limit) {
+        break;
       }
     }
 

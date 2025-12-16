@@ -7,7 +7,7 @@ import { PlayerStatus } from '../player/player-status.enum';
 import { Game } from '../game/game';
 import { GatewayEmitterService } from './gateway-emitter.service';
 import { AllowedMove } from '../enums/allowed-move.enum';
-import { GamesRepositoryService } from '../games-repository.service';
+import { GamesRepositoryService } from '../repositories/games-repository.service';
 import { GameNotFoundError } from '../socket-errors/game-not-found.error';
 import { EndedGameError } from '../socket-errors/ended-game.error';
 import { PlayerSessionService } from './player-session.service';
@@ -125,13 +125,14 @@ export class GamesService {
   }
 
   async currentGameOfPlayer(player: Player): Promise<Game | null> {
-    const games = await this.repository.findByPlayer(player);
-    const game =
-      games.find((game) => game.status() === GameStatus.PLAYING) ?? null;
+    const games = await this.repository.find({
+      playerId: player.id(),
+      status: GameStatus.PLAYING,
+    });
 
-    if (game) {
-      this.logger.debug('Retrieved exisitng game.', game.toJSON());
-      this.logger.debug(JSON.parse(JSON.stringify(game)));
+    if (games.length > 0) {
+      this.logger.debug('Retrieved exisitng game.', games[0].toJSON());
+      this.logger.debug(JSON.parse(JSON.stringify(games[0])));
     } else {
       this.logger.debug(
         'Cannot find an existing game for this player.',
@@ -139,6 +140,6 @@ export class GamesService {
       );
     }
 
-    return game;
+    return games[0];
   }
 }

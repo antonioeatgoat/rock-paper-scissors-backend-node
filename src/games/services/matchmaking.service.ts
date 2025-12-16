@@ -1,7 +1,7 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { Game } from '../game/game';
 import { PlayerStatus } from '../player/player-status.enum';
-import { GamesRepositoryService } from '../games-repository.service';
+import { GamesRepositoryService } from '../repositories/games-repository.service';
 import { PlayerSessionService } from './player-session.service';
 import { PlayerWithMeta } from '../player/player-with-meta';
 

@@ -18,10 +18,11 @@ export class Game {
     return this._players;
   }
 
-  hasPlayer(player: Player) {
+  hasPlayer(player: Player | string) {
+    const playerID = player instanceof Player ? player.id() : player;
+
     return (
-      this._players[0].id() === player.id() ||
-      this._players[1].id() === player.id()
+      this._players[0].id() === playerID || this._players[1].id() === playerID
     );
   }
 

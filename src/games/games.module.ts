@@ -6,7 +6,7 @@ import { GamesService } from './services/games.service';
 import { MatchmakingService } from './services/matchmaking.service';
 import { ResponseBuilderService } from './services/response-builder.service';
 import { GatewayEmitterService } from './services/gateway-emitter.service';
-import { GamesRepositoryService } from './games-repository.service';
+import { GamesRepositoryService } from './repositories/games-repository.service';
 import { InMemoryRepository } from './repositories/in-memory.repository';
 import { PlayerSessionService } from './services/player-session.service';
 import { GamesController } from './games.controller';
