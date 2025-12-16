@@ -1,6 +1,6 @@
 import { Game } from '../game/game';
 import { Player } from '../player/player';
-import { GameStatus } from '../game/game-status';
+import { GameStatus } from '../enums/game-status.enum';
 import { GamesRepositoryService } from '../games-repository.service';
 
 export class InMemoryRepository extends GamesRepositoryService {

@@ -1,6 +1,6 @@
 import { Game } from './game/game';
 import { Player } from './player/player';
-import { GameStatus } from './game/game-status';
+import { GameStatus } from './enums/game-status.enum';
 
 export abstract class GamesRepositoryService {
   abstract insert(game: Game): Promise<void>;

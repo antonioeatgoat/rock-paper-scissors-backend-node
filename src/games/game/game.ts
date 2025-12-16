@@ -1,5 +1,5 @@
 import { Player } from '../player/player';
-import { GameStatus } from './game-status';
+import { GameStatus } from '../enums/game-status.enum';
 import { PlayerMove } from './player-move.interface';
 import { AllowedMove } from '../enums/allowed-move.enum';
 

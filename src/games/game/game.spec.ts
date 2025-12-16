@@ -2,7 +2,7 @@ import { Game } from './game';
 import { Player } from '../player/player';
 import { Socket } from 'socket.io';
 import { PlayerStatus } from '../player/player-status.enum';
-import { GameStatus } from './game-status';
+import { GameStatus } from '../enums/game-status.enum';
 
 describe('Game', () => {
   const player1 = new Player(

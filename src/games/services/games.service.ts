@@ -11,7 +11,7 @@ import { GamesRepositoryService } from '../games-repository.service';
 import { GameNotFoundError } from '../socket-errors/game-not-found.error';
 import { EndedGameError } from '../socket-errors/ended-game.error';
 import { PlayerSessionService } from './player-session.service';
-import { GameStatus } from '../game/game-status';
+import { GameStatus } from '../enums/game-status.enum';
 import { PlayerWithMeta } from '../player/player-with-meta';
 
 @Injectable()
