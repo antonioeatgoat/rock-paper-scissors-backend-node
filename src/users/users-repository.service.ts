@@ -1,4 +1,3 @@
-// TODO Replace with interface ?
 import { User } from './user/user';
 
 export abstract class UsersRepositoryService {

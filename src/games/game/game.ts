@@ -18,13 +18,11 @@ export class Game {
     return this._players;
   }
 
-  hasPlayerId(playerId: string) {
-    // TODO remove?
-    return [this._players[0].id(), this._players[1].id()].includes(playerId);
-  }
-
   hasPlayer(player: Player) {
-    return this.hasPlayerId(player.id());
+    return (
+      this._players[0].id() === player.id() ||
+      this._players[1].id() === player.id()
+    );
   }
 
   status(): GameStatus {
