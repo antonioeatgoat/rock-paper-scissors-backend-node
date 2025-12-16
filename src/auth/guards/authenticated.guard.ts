@@ -4,9 +4,10 @@ import {
   Injectable,
   UnauthorizedException,
 } from '@nestjs/common';
-import { AccessTokenService } from '../services/AccessTokenService';
+
 import { RequestWithUser } from '../interfaces/request-with-user';
 import { SocketWithUser } from '../interfaces/socket-with-user';
+import { AccessTokenService } from '../services/AccessTokenService';
 
 @Injectable()
 export class AuthenticatedGuard implements CanActivate {

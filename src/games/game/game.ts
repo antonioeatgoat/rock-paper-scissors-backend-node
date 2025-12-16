@@ -1,7 +1,8 @@
-import { Player } from '../player/player';
-import { GameStatus } from '../enums/game-status.enum';
-import { PlayerMove } from './player-move.interface';
 import { AllowedMove } from '../enums/allowed-move.enum';
+import { GameStatus } from '../enums/game-status.enum';
+import { Player } from '../player/player';
+
+import { PlayerMove } from './player-move.interface';
 
 export class Game {
   private readonly _id: string = crypto.randomUUID();

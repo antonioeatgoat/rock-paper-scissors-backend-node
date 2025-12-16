@@ -1,4 +1,5 @@
 import { ErrorCode } from '../enums/error-code.enum';
+
 import { GenericSocketError } from './generic-socket.error';
 
 export class AuthError extends GenericSocketError {

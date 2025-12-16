@@ -1,6 +1,7 @@
-import { Player } from '../player/player';
-import { Game } from '../game/game';
 import { Injectable } from '@nestjs/common';
+
+import { Game } from '../game/game';
+import { Player } from '../player/player';
 import { GenericSocketError } from '../socket-errors/generic-socket.error';
 
 //TODO Some methods could be grouped and simplified

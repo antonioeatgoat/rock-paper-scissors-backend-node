@@ -1,4 +1,5 @@
 import { Game } from '../game/game';
+
 import { QueryInterface } from './query.interface';
 
 export abstract class GamesRepositoryService {

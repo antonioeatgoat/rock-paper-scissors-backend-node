@@ -1,9 +1,11 @@
 import { ConflictException, Injectable } from '@nestjs/common';
-import { RegisterDto } from './dto/register.dto';
-import { User } from '../users/user/user';
-import { AccessTokenService } from './services/AccessTokenService';
 import { Response } from 'express';
-import { UsersRepositoryService } from '../users/users-repository.service';
+
+import { User } from '@/users/user/user';
+import { UsersRepositoryService } from '@/users/users-repository.service';
+
+import { RegisterDto } from './dto/register.dto';
+import { AccessTokenService } from './services/AccessTokenService';
 
 @Injectable()
 export class AuthService {

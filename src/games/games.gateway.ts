@@ -1,3 +1,4 @@
+import { Logger, UseGuards, UseInterceptors } from '@nestjs/common';
 import {
   ConnectedSocket,
   MessageBody,
@@ -9,19 +10,20 @@ import {
   WebSocketServer,
 } from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
-import { Logger, UseGuards, UseInterceptors } from '@nestjs/common';
-import { SocketWithUser } from '../auth/interfaces/socket-with-user';
-import { AccessTokenService } from '../auth/services/AccessTokenService';
-import { GamesService } from './services/games.service';
-import { GatewayEmitterService } from './services/gateway-emitter.service';
-import { AuthenticatedGuard } from '../auth/guards/authenticated.guard';
+
+import { AuthenticatedGuard } from '@/auth/guards/authenticated.guard';
+import { SocketWithUser } from '@/auth/interfaces/socket-with-user';
+import { AccessTokenService } from '@/auth/services/AccessTokenService';
+
 import { Player as PlayerDecorator } from './decorators/player.decorator';
 import { AllowedMove } from './enums/allowed-move.enum';
+import { ListenedWebsocketEvent as Event } from './enums/listened-websocket-event.enum';
+import { PlayerInterceptor } from './interceptors/player.interceptor';
+import { PlayerWithMeta } from './player/player-with-meta';
+import { GamesService } from './services/games.service';
+import { GatewayEmitterService } from './services/gateway-emitter.service';
 import { AuthError } from './socket-errors/auth.error';
 import { InvalidMoveError } from './socket-errors/invalid-move.error';
-import { PlayerInterceptor } from './interceptors/player.interceptor';
-import { ListenedWebsocketEvent as Event } from './enums/listened-websocket-event.enum';
-import { PlayerWithMeta } from './player/player-with-meta';
 
 @UseInterceptors(PlayerInterceptor)
 @WebSocketGateway()

@@ -1,8 +1,10 @@
-import { Game } from './game';
-import { Player } from '../player/player';
 import { Socket } from 'socket.io';
-import { PlayerStatus } from '../player/player-status.enum';
+
 import { GameStatus } from '../enums/game-status.enum';
+import { Player } from '../player/player';
+import { PlayerStatus } from '../player/player-status.enum';
+
+import { Game } from './game';
 
 describe('Game', () => {
   const player1 = new Player(

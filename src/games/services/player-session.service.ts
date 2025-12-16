@@ -1,7 +1,8 @@
 import { Injectable } from '@nestjs/common';
-import { PlayerStatus } from '../player/player-status.enum';
-import { Player } from '../player/player';
 import { Socket } from 'socket.io';
+
+import { Player } from '../player/player';
+import { PlayerStatus } from '../player/player-status.enum';
 import { PlayerWithMeta } from '../player/player-with-meta';
 
 @Injectable()

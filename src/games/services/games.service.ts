@@ -1,18 +1,21 @@
 import { Injectable, Logger } from '@nestjs/common';
-import { Player } from '../player/player';
-import { User } from '../../users/user/user';
-import { MatchmakingService } from './matchmaking.service';
 import { Socket } from 'socket.io';
-import { PlayerStatus } from '../player/player-status.enum';
-import { Game } from '../game/game';
-import { GatewayEmitterService } from './gateway-emitter.service';
+
+import { User } from '@/users/user/user';
+
 import { AllowedMove } from '../enums/allowed-move.enum';
-import { GamesRepositoryService } from '../repositories/games-repository.service';
-import { GameNotFoundError } from '../socket-errors/game-not-found.error';
-import { EndedGameError } from '../socket-errors/ended-game.error';
-import { PlayerSessionService } from './player-session.service';
 import { GameStatus } from '../enums/game-status.enum';
+import { Game } from '../game/game';
+import { Player } from '../player/player';
+import { PlayerStatus } from '../player/player-status.enum';
 import { PlayerWithMeta } from '../player/player-with-meta';
+import { GamesRepositoryService } from '../repositories/games-repository.service';
+import { EndedGameError } from '../socket-errors/ended-game.error';
+import { GameNotFoundError } from '../socket-errors/game-not-found.error';
+
+import { GatewayEmitterService } from './gateway-emitter.service';
+import { MatchmakingService } from './matchmaking.service';
+import { PlayerSessionService } from './player-session.service';
 
 @Injectable()
 export class GamesService {

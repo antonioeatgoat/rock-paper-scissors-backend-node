@@ -3,10 +3,30 @@ import eslint from '@eslint/js';
 import eslintPluginPrettierRecommended from 'eslint-plugin-prettier/recommended';
 import globals from 'globals';
 import tseslint from 'typescript-eslint';
+import simpleImportSorter from 'eslint-plugin-simple-import-sort';
 
 export default tseslint.config(
   {
     ignores: ['eslint.config.mjs'],
+    plugins: {
+      'simple-import-sort': simpleImportSorter,
+    },
+    rules: {
+      'simple-import-sort/imports': [
+        'error',
+        {
+          groups: [
+            ['^node:'],
+            ['^@?\\w'],
+            ['^@/'],
+            ['^\\.\\.(?!/?$)', '^\\.\\./?$'],
+            ['^\\./(?=.*/)', '^\\.(?!/?$)', '^\\./?$'],
+            ['^.+\\.s?css$'],
+          ],
+        },
+      ],
+      'simple-import-sort/exports': 'error',
+    },
   },
   eslint.configs.recommended,
   ...tseslint.configs.recommendedTypeChecked,

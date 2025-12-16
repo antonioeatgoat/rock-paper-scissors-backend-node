@@ -1,6 +1,7 @@
-import { PlayerStatus } from './player-status.enum';
 import { Socket } from 'socket.io';
+
 import { Player } from './player';
+import { PlayerStatus } from './player-status.enum';
 
 export class PlayerWithMeta {
   constructor(

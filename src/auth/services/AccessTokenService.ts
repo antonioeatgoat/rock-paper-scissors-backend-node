@@ -1,13 +1,15 @@
 import { Injectable, Logger } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
-import { User } from '../../users/user/user';
-import { JwtPayload } from '../interfaces/jwt-payload.interface';
+import * as cookie from 'cookie';
 import type { Response } from 'express';
 import { Socket } from 'socket.io';
-import * as cookie from 'cookie';
+
+import { User } from '@/users/user/user';
+import { UsersRepositoryService } from '@/users/users-repository.service';
+
+import { JwtPayload } from '../interfaces/jwt-payload.interface';
 import { RequestWithUser } from '../interfaces/request-with-user';
-import { ConfigService } from '@nestjs/config';
-import { UsersRepositoryService } from '../../users/users-repository.service';
 
 @Injectable()
 export class AccessTokenService {

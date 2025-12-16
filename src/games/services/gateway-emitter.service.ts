@@ -1,11 +1,13 @@
 import { Injectable, Logger } from '@nestjs/common';
-import { Game } from '../game/game';
-import { ResponseBuilderService } from './response-builder.service';
 import { Socket } from 'socket.io';
+
+import { EmittedWebsocketEvent as Event } from '../enums/emitted-websocket-event.enum';
+import { Game } from '../game/game';
 import { Player } from '../player/player';
 import { GenericSocketError } from '../socket-errors/generic-socket.error';
-import { EmittedWebsocketEvent as Event } from '../enums/emitted-websocket-event.enum';
+
 import { PlayerSessionService } from './player-session.service';
+import { ResponseBuilderService } from './response-builder.service';
 
 @Injectable()
 export class GatewayEmitterService {

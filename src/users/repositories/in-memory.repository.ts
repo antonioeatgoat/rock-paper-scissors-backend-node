@@ -1,6 +1,7 @@
-import { UsersRepositoryService } from '../users-repository.service';
-import { User } from '../user/user';
 import { Logger } from '@nestjs/common';
+
+import { User } from '../user/user';
+import { UsersRepositoryService } from '../users-repository.service';
 
 export class InMemoryRepository extends UsersRepositoryService {
   private readonly logger = new Logger(InMemoryRepository.name);

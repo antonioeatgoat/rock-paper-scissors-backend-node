@@ -1,8 +1,10 @@
 import { Controller, Get, Req, UseGuards } from '@nestjs/common';
-import { PlayerSessionService } from './services/player-session.service';
+
+import { AuthenticatedGuard } from '@/auth/guards/authenticated.guard';
+import type { RequestWithUser } from '@/auth/interfaces/request-with-user';
+
 import { GamesService } from './services/games.service';
-import { AuthenticatedGuard } from '../auth/guards/authenticated.guard';
-import type { RequestWithUser } from '../auth/interfaces/request-with-user';
+import { PlayerSessionService } from './services/player-session.service';
 import { ResponseBuilderService } from './services/response-builder.service';
 
 //TODO This controller should not be part of this module,

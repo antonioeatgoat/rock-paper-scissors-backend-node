@@ -1,7 +1,8 @@
-import { NestFactory } from '@nestjs/core';
-import { AppModule } from './app.module';
 import { ConsoleLogger, LogLevel } from '@nestjs/common';
+import { NestFactory } from '@nestjs/core';
 import cookieParser from 'cookie-parser';
+
+import { AppModule } from './app.module';
 
 const logLevels: LogLevel[] = ['fatal', 'error', 'warn', 'log'];
 const enableDebugLog = process.env.NODE_ENV === undefined;
