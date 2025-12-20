@@ -38,6 +38,25 @@ function render() {
 document.addEventListener("DOMContentLoaded",  main);
 
 function main() {
+  document.getElementById('signup-form')
+    .addEventListener(
+      'submit',
+      (event) => {event.preventDefault(); signUp();}
+    );
+  document.getElementById('submit-nickname-btn')
+    .addEventListener('click', signUp);
+  document.getElementById('join-game-btn')
+    .addEventListener('click', findGame);
+  document.getElementById('play-again-btn')
+    .addEventListener('click', playAgain);
+  document.getElementById('exit-game-btn')
+    .addEventListener('click', exitGame);
+  document.querySelectorAll('.move-btn').forEach((button) => {
+    button.addEventListener('click', function () {
+      makeMove(this.dataset.move);
+    });
+  });
+
   _loadStoredState()
 
   if (state.nickname === '' || state.screen === 'login') {
@@ -91,10 +110,10 @@ async function signUp() {
   );
   const nickname = inputEl?.value?.trim();
 
-  // if (!nickname) {
-  //   _displayRegisterError('Nickname cannot be empty.');
-  //   return;
-  // }
+  if (!nickname) {
+    _displayRegisterError('Nickname cannot be empty.');
+    return;
+  }
 
   try {
     const response = await fetch(API_BASE_URL + '/auth/register', {

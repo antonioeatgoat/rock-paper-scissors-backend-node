@@ -13,7 +13,6 @@
 
     <button
       id="exit-game-btn"
-      onclick="exitGame();"
       class="hidden bg-gradient-to-r from-purple-600 to-pink-600 text-white font-semibold px-4 py-2 rounded-lg hover:from-purple-700 hover:to-pink-700 transition transform hover:scale-105"
     >
       Leave game
@@ -32,23 +31,24 @@
       </div>
 
       <div>
-        <label for="nickname-input">Enter your nickname to start playing</label>
-        <input
-          type="text"
-          id="nickname-input"
-          placeholder="Your nickname"
-          maxlength="20"
-          class="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:outline-none focus:border-purple-500 text-lg mb-4"
-        />
-        <p class="error-message hidden text-red-600 my-1"></p>
+        <form id="signup-form">
+          <label for="nickname-input">Enter your nickname to start playing</label>
+          <input
+            type="text"
+            id="nickname-input"
+            placeholder="Your nickname"
+            maxlength="20"
+            class="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:outline-none focus:border-purple-500 text-lg mb-4"
+          />
+          <p class="error-message hidden text-red-600 my-1"></p>
 
-        <button
-          id="submit-nickname-btn"
-          class="w-full bg-gradient-to-r from-purple-600 to-pink-600 text-white font-bold py-3 rounded-lg hover:from-purple-700 hover:to-pink-700 transition transform hover:scale-105"
-          onclick="signUp()"
-        >
-          Continue
-        </button>
+          <button
+            id="submit-nickname-btn"
+            class="w-full bg-gradient-to-r from-purple-600 to-pink-600 text-white font-bold py-3 rounded-lg hover:from-purple-700 hover:to-pink-700 transition transform hover:scale-105"
+          >
+            Continue
+          </button>
+        </form>
       </div>
     </div>
 
@@ -61,7 +61,6 @@
       <button
         id="join-game-btn"
         class="w-full bg-gradient-to-r from-green-500 to-emerald-600 text-white font-bold py-4 rounded-lg hover:from-green-600 hover:to-emerald-700 transition transform hover:scale-105 text-xl"
-        onclick="findGame()"
       >
         Join a New Game
       </button>
@@ -82,29 +81,21 @@
       <div id="moves-container">
         <button
           class="move-btn p-4 bg-gradient-to-r from-green-500 to-emerald-600 text-white font-bold rounded-lg hover:from-green-600 hover:to-emerald-700 transition transform hover:scale-105 text-xl"
-          onclick="makeMove('rock')"
+          data-move="rock"
         >Rock!</button>
         <button
           class="move-btn p-4 bg-gradient-to-r from-green-500 to-emerald-600 text-white font-bold rounded-lg hover:from-green-600 hover:to-emerald-700 transition transform hover:scale-105 text-xl"
-          onclick="makeMove('paper')"
+          data-move="paper"
         >Paper!</button>
         <button
           class="move-btn p-4 bg-gradient-to-r from-green-500 to-emerald-600 text-white font-bold rounded-lg hover:from-green-600 hover:to-emerald-700 transition transform hover:scale-105 text-xl"
-          onclick="makeMove('scissors')"
+          data-move="scissors"
         >Scissors!</button>
       </div>
       <div id="choosen-move-container" class="hidden">
         <p class="mb-2">Your move is <span id="choosen-move" class="font-bold"></span></p>
         <p>Waiting for opponent...</p>
       </div>
-<!--      <hr class="my-5"/>-->
-<!--      <button-->
-<!--        id="exit-game-btn"-->
-<!--        class="bg-gradient-to-r from-purple-600 to-pink-600 text-white font-bold p-4 rounded-lg hover:from-purple-700 hover:to-pink-700 transition transform hover:scale-105 text-xl"-->
-<!--        onclick="exitGame()"-->
-<!--      >-->
-<!--        Exit game-->
-<!--      </button>-->
     </div>
 
 
