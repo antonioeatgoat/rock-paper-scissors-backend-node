@@ -17,6 +17,14 @@ export class MatchmakingService {
     private readonly gamesRepository: GamesRepositoryService,
   ) {}
 
+  isInQueue(player: PlayerWithMeta) {
+    return this.waitingPlayer?.id() === player.id();
+  }
+
+  cleanQueue() {
+    this.waitingPlayer = null;
+  }
+
   async searchGame(player: PlayerWithMeta): Promise<Game | null> {
     if (player.isPLaying()) {
       this.logger.error(
@@ -54,12 +62,8 @@ export class MatchmakingService {
     const newGame = new Game([players[0].shrink(), players[1].shrink()]);
     await this.gamesRepository.insert(newGame);
 
-    this.cleanWaitingQueue();
+    this.cleanQueue();
 
     return newGame;
-  }
-
-  private cleanWaitingQueue() {
-    this.waitingPlayer = null;
   }
 }

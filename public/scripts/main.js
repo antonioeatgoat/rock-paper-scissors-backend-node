@@ -66,7 +66,7 @@ async function _refreshPreviousStatus(previousScreen) {
   }
 
   if (data.status === 'idle') {
-    _changeScreen(previousScreen !== 'loading' ? previousScreen : 'lobby');
+    _changeScreen('lobby');
     return;
   }
 
@@ -75,7 +75,7 @@ async function _refreshPreviousStatus(previousScreen) {
   const status = data?.status ?? '';
 
   if (status === 'waiting') {
-    findGame();
+    _changeScreen('waiting');
   } else if (status === 'playing') {
     _renderPlayingGame(data);
   } else {
