@@ -93,10 +93,10 @@ async function signUp() {
   );
   const nickname = inputEl?.value?.trim();
 
-  if (!nickname) {
-    _displayRegisterError('Nickname cannot be empty.');
-    return;
-  }
+  // if (!nickname) {
+  //   _displayRegisterError('Nickname cannot be empty.');
+  //   return;
+  // }
 
   try {
     const response = await fetch(API_BASE_URL + '/auth/register', {
