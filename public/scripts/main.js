@@ -29,11 +29,9 @@ function render() {
   }
 
   if (state.screen === 'playing') {
-    _hideById('logout-btn');
     _showById('exit-game-btn');
   } else {
     _hideById('exit-game-btn');
-    _showById('logout-btn');
   }
 }
 
@@ -150,6 +148,18 @@ function playAgain() {
   _emit('play_again');
 }
 
+function exitGame() {
+  if (state.screen !== 'playing') {
+    console.warn('Trying to send `exit_game` but current screen is wrong.');
+    return;
+  }
+
+  _changeScreen('lobby');
+
+  console.debug('Sending `exit_game` event.');
+  state.socket.emit('exit_game');
+}
+
 function _initializeWebSocket() {
   const socket = io(WS_URL);
   state.socket = socket;
@@ -176,29 +186,26 @@ function _initializeWebSocket() {
     console.debug('Game finished');
     console.debug(data);
 
-    _updateTextById('your-move', data.yourMove)
-    _updateTextById('opponent-move', data.opponentMove)
-
     _hideByClass('.game-result')
 
-    if (data.draw === true) {
-      _showById('game-result-tie')
-    } else if (data.winner === true) {
-      _showById('game-result-won')
-    } else {
-      _showById('game-result-lost')
+    _updateTextById('your-move', data?.yourMove ? data.yourMove : 'Not played')
+    _updateTextById('opponent-move', data?.opponentMove ? data?.opponentMove : 'Not played')
+
+    const resultElMap = {
+      winner: ['game-result-won', 'game-result-moves'],
+      opponent_left: ['game-result-won', 'game-result-opponent-left'],
+      loser: ['game-result-lost', 'game-result-moves'],
+      tie: ['game-result-tie', 'game-result-moves'],
+    }
+
+    if (data?.result in resultElMap) {
+      for(const elId of resultElMap[data?.result]) {
+        console.log('showing by id ', elId);
+        _showById(elId);
+      }
     }
 
     _changeScreen('game-finished');
-  });
-
-  socket.on('error', function (data) {
-    console.error('WebSocket error:', data);
-
-    if (data?.error === 'auth_error') {
-      _resetState();
-      _changeScreen('login');
-    }
   });
 
   socket.on('disconnect', function () {

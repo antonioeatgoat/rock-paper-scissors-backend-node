@@ -24,7 +24,7 @@ export class GamesController {
       return { status: 'idle' };
     }
 
-    const player = this.playerSession.getPlayer(req.user.id());
+    const player = this.playerSession.getPlayerWithMeta(req.user.id());
     const game = await this.gamesService.currentGameOfPlayer(player);
 
     if (!game) {
@@ -32,9 +32,9 @@ export class GamesController {
     }
 
     if (game.isFinished()) {
-      return this.responseSerializer.gameFinished(game, player);
+      return this.responseSerializer.gameFinished(game, player.shrink());
     } else {
-      return this.responseSerializer.connectExistingGame(game, player);
+      return this.responseSerializer.connectExistingGame(game, player.shrink());
     }
   }
 }

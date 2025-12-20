@@ -28,20 +28,24 @@ export class ResponseBuilderService {
 
     if (winner === null) {
       return {
-        status: 'finished',
+        result: 'tie',
         yourMove: game.moveOf(receiver) ?? '',
         opponentMove: game.moveOf(game.opponentOf(receiver)) ?? '',
-        winner: false,
-        draw: true,
       };
     }
 
     return {
-      status: 'finished',
+      result: winner.id() === receiver.id() ? 'winner' : 'loser',
       yourMove: game.moveOf(receiver) ?? '',
       opponentMove: game.moveOf(game.opponentOf(receiver)) ?? '',
-      winner: receiver.id() === winner.id(),
-      draw: false,
+    };
+  }
+
+  opponentLeft(game: Game, receiver: Player) {
+    return {
+      result: 'opponent_left',
+      yourMove: game.moveOf(receiver) ?? '',
+      opponentMove: game.moveOf(game.opponentOf(receiver)) ?? '',
     };
   }
 

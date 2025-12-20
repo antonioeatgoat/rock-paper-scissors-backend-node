@@ -6,7 +6,6 @@ import { User } from '@/users/user/user';
 import { AllowedMove } from '../enums/allowed-move.enum';
 import { GameStatus } from '../enums/game-status.enum';
 import { Game } from '../game/game';
-import { Player } from '../player/player';
 import { PlayerStatus } from '../player/player-status.enum';
 import { PlayerWithMeta } from '../player/player-with-meta';
 import { GamesRepositoryService } from '../repositories/games-repository.service';
@@ -55,25 +54,15 @@ export class GamesService {
   }
 
   async handleSearchingGame(player: PlayerWithMeta) {
-    if (player.isPLaying()) {
-      const existingGame = await this.currentGameOfPlayer(player.shrink());
+    const existingGame = await this.currentGameOfPlayer(player);
 
-      if (existingGame) {
-        this.emitter.emitGameJoined(existingGame, player.shrink());
-        this.logger.warn(
-          'An user re-joined an existing game in an expected way',
-          { user: player.id(), game: existingGame.id() },
-        );
-        return;
-      }
-
-      this.logger.debug(
-        "Player had status PLAYING but isn't in any running game. Resetting his status",
-        { user: player.id() },
+    if (existingGame) {
+      this.emitter.emitGameJoined(existingGame, player.shrink());
+      this.logger.warn(
+        'An user re-joined an existing game in an expected way',
+        { user: player.id(), game: existingGame.id() },
       );
-
-      player.changeStatus(PlayerStatus.IDLE);
-      this.playerSession.savePlayer(player);
+      return;
     }
 
     const newGame = await this.matchmaking.searchGame(player);
@@ -86,11 +75,11 @@ export class GamesService {
     this.emitter.emitGameJoined(newGame);
   }
 
-  async handleMove(socket: Socket, player: PlayerWithMeta, move: AllowedMove) {
-    const game = await this.currentGameOfPlayer(player.shrink());
+  async handleMove(player: PlayerWithMeta, move: AllowedMove) {
+    const game = await this.currentGameOfPlayer(player);
 
     if (!game) {
-      this.emitter.emitError(socket, new GameNotFoundError());
+      this.emitter.emitError(player.client(), new GameNotFoundError());
       this.logger.warn(
         `User ${player.id()} made a move but has no game associated`,
       );
@@ -101,7 +90,7 @@ export class GamesService {
       this.logger.warn(
         `User ${player.id()} made a move but the game is finished already.`,
       );
-      this.emitter.emitError(socket, new EndedGameError());
+      this.emitter.emitError(player.client(), new EndedGameError());
       return;
     }
 
@@ -127,22 +116,58 @@ export class GamesService {
     await this.handleSearchingGame(player);
   }
 
-  async currentGameOfPlayer(player: Player): Promise<Game | null> {
+  async handleExitGame(player: PlayerWithMeta) {
+    const game = await this.currentGameOfPlayer(player);
+
+    if (!game) {
+      this.logger.warn(
+        `Player trying to leave the current game isn't in any game`,
+        { player: player.shrink().toJSON() },
+      );
+      return;
+    }
+
+    game.endGame(game.opponentOf(player.shrink()));
+    await this.repository.update(game);
+    for (const p of game.players()) {
+      const playerWithMeta = this.playerSession.getPlayerWithMeta(p.id());
+      playerWithMeta.changeStatus(PlayerStatus.IDLE);
+      this.playerSession.savePlayer(playerWithMeta);
+    }
+
+    this.emitter.emitGameLeft(game, player.shrink());
+  }
+
+  async currentGameOfPlayer(player: PlayerWithMeta): Promise<Game | null> {
+    this.logger.verbose('Searching for running game of player.', {
+      player: player.toJSON(),
+    });
+
+    if (!player.isPLaying()) {
+      this.logger.verbose('PLayer has no status PLAYING. Skipping it.');
+      return null;
+    }
+
     const games = await this.repository.find({
       playerId: player.id(),
       status: GameStatus.PLAYING,
     });
 
     if (games.length > 0) {
-      this.logger.debug('Retrieved exisitng game.', games[0].toJSON());
-      this.logger.debug(JSON.parse(JSON.stringify(games[0])));
-    } else {
-      this.logger.debug(
-        'Cannot find an existing game for this player.',
-        player.toJSON(),
-      );
+      this.logger.verbose('Game fetched.', {
+        game: games[0].toJSON(),
+      });
+      return games[0];
     }
 
-    return games[0];
+    this.logger.warn(
+      "Player had status PLAYING but isn't in any running game. Resetting his status",
+      { user: player.id() },
+    );
+
+    player.changeStatus(PlayerStatus.IDLE);
+    this.playerSession.savePlayer(player);
+
+    return null;
   }
 }

@@ -46,6 +46,14 @@ export class GatewayEmitterService {
     }
   }
 
+  emitGameLeft(game: Game, playerWhoLeft: Player): void {
+    this.emitToPlayer(
+      game.opponentOf(playerWhoLeft),
+      Event.GAME_FINISHED,
+      this.responseBuilder.opponentLeft(game, game.opponentOf(playerWhoLeft)),
+    );
+  }
+
   emitError(client: Socket, error: GenericSocketError): void {
     this.logger.debug('WebSocket error', {
       error: error.message(),
@@ -62,12 +70,6 @@ export class GatewayEmitterService {
       player: player.id(),
       // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
       data: JSON.parse(JSON.stringify(data)),
-    });
-
-    this.logger.debug(`WebSocket emits: ${event}`, {
-      player: player.id(),
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-      data: data,
     });
 
     playerWithMeta.client().emit(event, data);

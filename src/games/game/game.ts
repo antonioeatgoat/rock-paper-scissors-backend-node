@@ -8,6 +8,7 @@ export class Game {
   private readonly _id: string = crypto.randomUUID();
   private _status: GameStatus = GameStatus.PLAYING;
   private _moves: Map<string, AllowedMove> = new Map();
+  private _forcedWinner: Player | null = null;
 
   constructor(private readonly _players: [Player, Player]) {}
 
@@ -55,7 +56,7 @@ export class Game {
     this._moves.set(playerMove.player.id(), playerMove.move);
 
     if (this._moves.size === 2) {
-      this._status = GameStatus.ENDED;
+      this.endGame();
     }
   }
 
@@ -63,21 +64,38 @@ export class Game {
     return this._moves.get(player.id()) ?? null;
   }
 
+  endGame(winner: Player | null = null): void {
+    this._status = GameStatus.ENDED;
+
+    if (winner && this.hasPlayer(winner)) {
+      this._forcedWinner = winner;
+    }
+  }
+
   isFinished(): boolean {
     return this._status === GameStatus.ENDED;
   }
 
   theWinner(): Player | null {
+    if (this._forcedWinner) {
+      return this._forcedWinner;
+    }
+
     const [p1, p2] = this._players;
 
     const m1 = this._moves.get(p1.id());
     const m2 = this._moves.get(p2.id());
 
-    if (!m1 || !m2 || m1 === m2) {
+    if (m1 === m2) {
       return null;
     }
 
+    if (!m1 && m2) {
+      return p2;
+    }
+
     if (
+      (!m2 && m1) ||
       (m1 === AllowedMove.ROCK && m2 === AllowedMove.SCISSORS) ||
       (m1 === AllowedMove.PAPER && m2 === AllowedMove.ROCK) ||
       (m1 === AllowedMove.SCISSORS && m2 === AllowedMove.PAPER)

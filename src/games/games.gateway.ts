@@ -1,6 +1,5 @@
 import { Logger, UseGuards, UseInterceptors } from '@nestjs/common';
 import {
-  ConnectedSocket,
   MessageBody,
   OnGatewayConnection,
   OnGatewayDisconnect,
@@ -82,17 +81,16 @@ export class GamesGateway
   @SubscribeMessage(Event.MAKE_MOVE)
   @UseGuards(AuthenticatedGuard)
   async handleMove(
-    @ConnectedSocket() client: Socket,
     @MessageBody() move: string,
     @PlayerDecorator() player: PlayerWithMeta,
   ) {
     if (!Object.values(AllowedMove).includes(move as AllowedMove)) {
-      this.emitter.emitError(client, new InvalidMoveError());
+      this.emitter.emitError(player.client(), new InvalidMoveError());
       this.logger.warn('Received a not valid move', { move: move });
       return;
     }
 
-    await this.gamesService.handleMove(client, player, move as AllowedMove);
+    await this.gamesService.handleMove(player, move as AllowedMove);
   }
 
   // TODO This is just a placeholder. It must implement the play again with the same user
@@ -100,6 +98,12 @@ export class GamesGateway
   @UseGuards(AuthenticatedGuard)
   async handlePlayAgain(@PlayerDecorator() player: PlayerWithMeta) {
     await this.gamesService.handlePlayAgain(player);
+  }
+
+  @SubscribeMessage(Event.EXIT_GAME)
+  @UseGuards(AuthenticatedGuard)
+  async handleExitGame(@PlayerDecorator() player: PlayerWithMeta) {
+    await this.gamesService.handleExitGame(player);
   }
 
   private disconnect(client: Socket) {
