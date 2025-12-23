@@ -18,11 +18,11 @@ import { ExitGameCommand } from '@/games/application/command/exit-game.command';
 import { SearchGameCommand } from '@/games/application/command/search-game.command';
 import { SelectMoveCommand } from '@/games/application/command/select-move.command';
 import { CommandBus } from '@/games/application/command-bus.service';
+import { PlayerSessionService } from '@/games/application/services/player-session.service';
 import { ListenedWebsocketEvent as Event } from '@/games/application/websocket/enums/listened-websocket-event.enum';
 import { Player } from '@/games/domain/player/player';
 
 import { AllowedMove } from '../../domain/game/allowed-move.enum';
-import { GamesService } from '../services/games.service';
 
 import { Player as PlayerDecorator } from './decorators/player.decorator';
 import { AuthError } from './errors/auth.error';
@@ -42,7 +42,7 @@ export class WebsocketGateway
 
   constructor(
     private readonly accessTokenService: AccessTokenService,
-    private readonly gamesService: GamesService,
+    private readonly playerSession: PlayerSessionService,
     private readonly emitter: GatewayEmitterService,
     private readonly commandBus: CommandBus,
   ) {}
@@ -72,7 +72,7 @@ export class WebsocketGateway
       user: user.id(),
     });
 
-    this.gamesService.connectUser(user, client);
+    this.playerSession.registerUser(user, client);
   }
 
   handleDisconnect(client: Socket) {

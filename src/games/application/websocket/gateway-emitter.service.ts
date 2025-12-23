@@ -1,7 +1,7 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { Socket } from 'socket.io';
 
-import { SocketRegistry } from '@/games/application/websocket/socket-registry.service';
+import { PlayerSessionService } from '@/games/application/services/player-session.service';
 import { Game } from '@/games/domain/game/game';
 import { Player } from '@/games/domain/player/player';
 
@@ -15,7 +15,7 @@ export class GatewayEmitterService {
 
   constructor(
     private readonly responseBuilder: ResponseBuilderService,
-    private readonly socketRegistry: SocketRegistry,
+    private readonly playerSession: PlayerSessionService,
   ) {}
 
   emitGameJoined(game: Game, receiver: Player | null = null): void {
@@ -64,7 +64,7 @@ export class GatewayEmitterService {
   }
 
   private emitToPlayer(player: Player, event: string, data: any = {}) {
-    const socket = this.socketRegistry.getSocket(player);
+    const socket = this.playerSession.getSocket(player);
 
     this.logger.debug(`WebSocket emits: ${event}`, {
       player: player.id(),

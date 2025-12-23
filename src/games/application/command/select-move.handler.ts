@@ -7,7 +7,6 @@ import { PlayerSessionService } from '@/games/application/services/player-sessio
 import { EndedGameError } from '@/games/application/websocket/errors/ended-game.error';
 import { GameNotFoundError } from '@/games/application/websocket/errors/game-not-found.error';
 import { GatewayEmitterService } from '@/games/application/websocket/gateway-emitter.service';
-import { SocketRegistry } from '@/games/application/websocket/socket-registry.service';
 import { GamesRepositoryService } from '@/games/infrastructure/games-repository.service';
 
 @Injectable()
@@ -18,7 +17,6 @@ export class SelectMoveHandler implements CommandHandler<SelectMoveCommand> {
     private readonly gameFetcher: GameFetcher,
     private readonly emitter: GatewayEmitterService,
     private readonly gameRepository: GamesRepositoryService,
-    private readonly socketRegistry: SocketRegistry,
     private readonly playerSession: PlayerSessionService,
   ) {}
 
@@ -54,9 +52,7 @@ export class SelectMoveHandler implements CommandHandler<SelectMoveCommand> {
 
     this.emitter.emitGameFinished(game);
     for (const p of game.players()) {
-      const socket = this.socketRegistry.getSocket(p);
-      socket.disconnect(true);
-      this.playerSession.remove(p);
+      this.playerSession.unregister(p.id());
     }
 
     this.logger.debug(`Game is finished`, {

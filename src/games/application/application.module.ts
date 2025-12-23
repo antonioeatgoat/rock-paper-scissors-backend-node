@@ -9,12 +9,10 @@ import { SelectMoveCommand } from '@/games/application/command/select-move.comma
 import { SelectMoveHandler } from '@/games/application/command/select-move.handler';
 import { CommandBus } from '@/games/application/command-bus.service';
 import { GameFetcher } from '@/games/application/services/game-fetcher';
-import { SocketRegistry } from '@/games/application/websocket/socket-registry.service';
 import { DomainModule } from '@/games/domain/domain.module';
 import { InfrastructureModule } from '@/games/infrastructure/infrastructure.module';
 import { UsersModule } from '@/users/users.module';
 
-import { GamesService } from './services/games.service';
 import { MatchmakingService } from './services/matchmaking.service';
 import { PlayerSessionService } from './services/player-session.service';
 import { GatewayEmitterService } from './websocket/gateway-emitter.service';
@@ -31,13 +29,11 @@ import { GamesController } from './games.controller';
     SelectMoveHandler,
     ExitGameHandler,
     WebsocketGateway,
-    GamesService,
     GatewayEmitterService,
     ResponseBuilderService,
     MatchmakingService,
     PlayerSessionService,
     GameFetcher,
-    SocketRegistry,
   ],
 })
 export class ApplicationModule {
