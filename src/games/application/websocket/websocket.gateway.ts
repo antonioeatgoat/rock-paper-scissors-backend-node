@@ -14,6 +14,10 @@ import { Server, Socket } from 'socket.io';
 import { AuthenticatedGuard } from '@/auth/guards/authenticated.guard';
 import { SocketWithUser } from '@/auth/interfaces/socket-with-user';
 import { AccessTokenService } from '@/auth/services/AccessTokenService';
+import { ExitGameCommand } from '@/games/application/command/exit-game.command';
+import { SearchGameCommand } from '@/games/application/command/search-game.command';
+import { SelectMoveCommand } from '@/games/application/command/select-move.command';
+import { CommandBus } from '@/games/application/command-bus.service';
 import { ListenedWebsocketEvent as Event } from '@/games/application/websocket/enums/listened-websocket-event.enum';
 import { Player } from '@/games/domain/player/player';
 
@@ -40,6 +44,7 @@ export class WebsocketGateway
     private readonly accessTokenService: AccessTokenService,
     private readonly gamesService: GamesService,
     private readonly emitter: GatewayEmitterService,
+    private readonly commandBus: CommandBus,
   ) {}
 
   afterInit() {
@@ -77,7 +82,7 @@ export class WebsocketGateway
   @SubscribeMessage(Event.SEARCH_GAME)
   @UseGuards(AuthenticatedGuard)
   async handleSearchGame(@PlayerDecorator() player: Player) {
-    await this.gamesService.handleSearchingGame(player);
+    await this.commandBus.execute(new SearchGameCommand(player));
   }
 
   @SubscribeMessage(Event.MAKE_MOVE)
@@ -93,20 +98,22 @@ export class WebsocketGateway
       return;
     }
 
-    await this.gamesService.handleMove(client, player, move as AllowedMove);
+    await this.commandBus.execute(
+      new SelectMoveCommand(client, player, move as AllowedMove),
+    );
   }
 
   // TODO This is just a placeholder. It must implement the play again with the same user
   @SubscribeMessage(Event.PLAY_AGAIN)
   @UseGuards(AuthenticatedGuard)
   async handlePlayAgain(@PlayerDecorator() player: Player) {
-    await this.gamesService.handlePlayAgain(player);
+    await this.commandBus.execute(new SearchGameCommand(player));
   }
 
   @SubscribeMessage(Event.EXIT_GAME)
   @UseGuards(AuthenticatedGuard)
   async handleExitGame(@PlayerDecorator() player: Player) {
-    await this.gamesService.handleExitGame(player);
+    await this.commandBus.execute(new ExitGameCommand(player));
   }
 
   private disconnect(client: Socket) {
