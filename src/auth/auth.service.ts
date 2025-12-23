@@ -6,11 +6,10 @@ import {
 import { Response } from 'express';
 import sanitizeHtml from 'sanitize-html';
 
+import { RegisterDto } from '@/auth/dto/register.dto';
+import { AccessTokenService } from '@/auth/services/AccessTokenService';
 import { User } from '@/users/user/user';
 import { UsersRepositoryService } from '@/users/users-repository.service';
-
-import { RegisterDto } from './dto/register.dto';
-import { AccessTokenService } from './services/AccessTokenService';
 
 @Injectable()
 export class AuthService {

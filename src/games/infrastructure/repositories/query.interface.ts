@@ -1,4 +1,4 @@
-import { GameStatus } from '../../domain/game/game-status.enum';
+import { GameStatus } from '@/games/domain/game/game-status.enum';
 
 export interface QueryInterface {
   playerId?: string;

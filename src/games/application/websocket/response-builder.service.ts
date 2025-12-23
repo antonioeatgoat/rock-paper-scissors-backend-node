@@ -1,9 +1,8 @@
 import { Injectable } from '@nestjs/common';
 
+import { GenericSocketError } from '@/games/application/websocket/errors/generic-socket.error';
 import { Game } from '@/games/domain/game/game';
 import { Player } from '@/games/domain/player/player';
-
-import { GenericSocketError } from './errors/generic-socket.error';
 
 //TODO Some methods could be grouped and simplified
 @Injectable()

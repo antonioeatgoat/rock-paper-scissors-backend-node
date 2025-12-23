@@ -1,7 +1,6 @@
-import { Player } from '../player/player';
-
-import { Game } from './game';
-import { GameStatus } from './game-status.enum';
+import { Game } from '@/games/domain/game/game';
+import { GameStatus } from '@/games/domain/game/game-status.enum';
+import { Player } from '@/games/domain/player/player';
 
 describe('Game', () => {
   const player1 = new Player('123456', 'User A');

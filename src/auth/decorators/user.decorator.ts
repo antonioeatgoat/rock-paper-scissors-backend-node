@@ -4,8 +4,8 @@ import {
   ExecutionContext,
 } from '@nestjs/common';
 
-import { RequestWithUser } from '../interfaces/request-with-user';
-import { SocketWithUser } from '../interfaces/socket-with-user';
+import { RequestWithUser } from '@/auth/interfaces/request-with-user';
+import { SocketWithUser } from '@/auth/interfaces/socket-with-user';
 
 export const User = createParamDecorator(
   (_data: string, context: ExecutionContext) => {

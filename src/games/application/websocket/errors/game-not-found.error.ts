@@ -1,6 +1,5 @@
 import { ErrorCode } from '@/games/application/websocket/enums/error-code.enum';
-
-import { GenericSocketError } from './generic-socket.error';
+import { GenericSocketError } from '@/games/application/websocket/errors/generic-socket.error';
 
 export class GameNotFoundError extends GenericSocketError {
   code(): ErrorCode {

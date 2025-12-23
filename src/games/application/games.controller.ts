@@ -3,10 +3,9 @@ import { Controller, Get, Req, UseGuards } from '@nestjs/common';
 import { AuthenticatedGuard } from '@/auth/guards/authenticated.guard';
 import type { RequestWithUser } from '@/auth/interfaces/request-with-user';
 import { GameFetcher } from '@/games/application/services/game-fetcher';
-
-import { MatchmakingService } from './services/matchmaking.service';
-import { PlayerSessionService } from './services/player-session.service';
-import { ResponseBuilderService } from './websocket/response-builder.service';
+import { MatchmakingService } from '@/games/application/services/matchmaking.service';
+import { PlayerSessionService } from '@/games/application/services/player-session.service';
+import { ResponseBuilderService } from '@/games/application/websocket/response-builder.service';
 
 //TODO This controller should not be part of this module,
 // since it provides information on the current user in addition to the current game

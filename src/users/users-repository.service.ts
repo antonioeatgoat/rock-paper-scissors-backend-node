@@ -1,4 +1,4 @@
-import { User } from './user/user';
+import { User } from '@/users/user/user';
 
 export abstract class UsersRepositoryService {
   abstract save(user: User): Promise<void>;

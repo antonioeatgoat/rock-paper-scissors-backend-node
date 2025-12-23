@@ -6,9 +6,8 @@ import {
   NestInterceptor,
 } from '@nestjs/common';
 
+import { PlayerSessionService } from '@/games/application/services/player-session.service';
 import { SocketWithPlayer } from '@/games/application/websocket/interfaces/socket-with-player';
-
-import { PlayerSessionService } from '../../services/player-session.service';
 
 @Injectable()
 export class PlayerInterceptor implements NestInterceptor {

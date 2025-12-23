@@ -1,6 +1,6 @@
 import { Test, TestingModule } from '@nestjs/testing';
 
-import { MatchmakingService } from './matchmaking.service';
+import { MatchmakingService } from '@/games/application/services/matchmaking.service';
 
 describe('MatchmakingService', () => {
   let service: MatchmakingService;

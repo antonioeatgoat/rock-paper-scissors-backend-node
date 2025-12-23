@@ -1,8 +1,6 @@
 import { Game } from '@/games/domain/game/game';
-
-import { GameStatus } from '../../domain/game/game-status.enum';
-
-import { InMemoryRepository } from './in-memory.repository';
+import { GameStatus } from '@/games/domain/game/game-status.enum';
+import { InMemoryRepository } from '@/games/infrastructure/repositories/in-memory.repository';
 
 function makeGame(params: {
   id: string;

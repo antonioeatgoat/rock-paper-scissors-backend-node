@@ -1,6 +1,5 @@
-import { Player } from '../player/player';
-
-import { AllowedMove } from './allowed-move.enum';
+import { AllowedMove } from '@/games/domain/game/allowed-move.enum';
+import { Player } from '@/games/domain/player/player';
 
 export interface PlayerMove {
   player: Player;

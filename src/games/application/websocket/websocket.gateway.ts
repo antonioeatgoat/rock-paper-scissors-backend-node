@@ -19,16 +19,14 @@ import { SearchGameCommand } from '@/games/application/command/search-game.comma
 import { SelectMoveCommand } from '@/games/application/command/select-move.command';
 import { CommandBus } from '@/games/application/command-bus.service';
 import { PlayerSessionService } from '@/games/application/services/player-session.service';
+import { Player as PlayerDecorator } from '@/games/application/websocket/decorators/player.decorator';
 import { ListenedWebsocketEvent as Event } from '@/games/application/websocket/enums/listened-websocket-event.enum';
+import { AuthError } from '@/games/application/websocket/errors/auth.error';
+import { InvalidMoveError } from '@/games/application/websocket/errors/invalid-move.error';
+import { GatewayEmitterService } from '@/games/application/websocket/gateway-emitter.service';
+import { PlayerInterceptor } from '@/games/application/websocket/interceptors/player.interceptor';
+import { AllowedMove } from '@/games/domain/game/allowed-move.enum';
 import { Player } from '@/games/domain/player/player';
-
-import { AllowedMove } from '../../domain/game/allowed-move.enum';
-
-import { Player as PlayerDecorator } from './decorators/player.decorator';
-import { AuthError } from './errors/auth.error';
-import { InvalidMoveError } from './errors/invalid-move.error';
-import { PlayerInterceptor } from './interceptors/player.interceptor';
-import { GatewayEmitterService } from './gateway-emitter.service';
 
 @UseInterceptors(PlayerInterceptor)
 @WebSocketGateway()

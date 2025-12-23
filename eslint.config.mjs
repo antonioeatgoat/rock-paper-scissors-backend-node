@@ -12,6 +12,7 @@ export default tseslint.config(
       'simple-import-sort': simpleImportSorter,
     },
     rules: {
+      'simple-import-sort/exports': 'error',
       'simple-import-sort/imports': [
         'error',
         {
@@ -25,7 +26,17 @@ export default tseslint.config(
           ],
         },
       ],
-      'simple-import-sort/exports': 'error',
+      'no-restricted-imports': [
+        'error',
+        {
+          patterns: [
+            './*',
+            '../*',
+            '../../*',
+            '../../../*',
+          ],
+        },
+      ],
     },
   },
   eslint.configs.recommended,

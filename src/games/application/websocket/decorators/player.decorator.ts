@@ -4,7 +4,7 @@ import {
   ExecutionContext,
 } from '@nestjs/common';
 
-import { SocketWithPlayer } from '../interfaces/socket-with-player';
+import { SocketWithPlayer } from '@/games/application/websocket/interfaces/socket-with-player';
 
 export const Player = createParamDecorator(
   (_data: string, context: ExecutionContext) => {

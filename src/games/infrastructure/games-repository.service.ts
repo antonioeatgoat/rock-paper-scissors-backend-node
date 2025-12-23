@@ -1,6 +1,5 @@
 import { Game } from '@/games/domain/game/game';
-
-import { QueryInterface } from './repositories/query.interface';
+import { QueryInterface } from '@/games/infrastructure/repositories/query.interface';
 
 export abstract class GamesRepositoryService {
   abstract insert(game: Game): Promise<void>;

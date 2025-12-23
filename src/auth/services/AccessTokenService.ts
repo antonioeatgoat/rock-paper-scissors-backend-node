@@ -5,11 +5,10 @@ import * as cookie from 'cookie';
 import type { Response } from 'express';
 import { Socket } from 'socket.io';
 
+import { JwtPayload } from '@/auth/interfaces/jwt-payload.interface';
+import { RequestWithUser } from '@/auth/interfaces/request-with-user';
 import { User } from '@/users/user/user';
 import { UsersRepositoryService } from '@/users/users-repository.service';
-
-import { JwtPayload } from '../interfaces/jwt-payload.interface';
-import { RequestWithUser } from '../interfaces/request-with-user';
 
 @Injectable()
 export class AccessTokenService {

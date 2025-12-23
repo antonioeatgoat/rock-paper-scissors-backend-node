@@ -1,8 +1,6 @@
 import { Game } from '@/games/domain/game/game';
-
-import { GamesRepositoryService } from '../games-repository.service';
-
-import { QueryInterface } from './query.interface';
+import { GamesRepositoryService } from '@/games/infrastructure/games-repository.service';
+import { QueryInterface } from '@/games/infrastructure/repositories/query.interface';
 
 export class InMemoryRepository extends GamesRepositoryService {
   private readonly games = new Map<string, Game>();

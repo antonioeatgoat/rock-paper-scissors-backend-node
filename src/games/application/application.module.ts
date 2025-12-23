@@ -8,17 +8,16 @@ import { SearchGameHandler } from '@/games/application/command/search-game.handl
 import { SelectMoveCommand } from '@/games/application/command/select-move.command';
 import { SelectMoveHandler } from '@/games/application/command/select-move.handler';
 import { CommandBus } from '@/games/application/command-bus.service';
+import { GamesController } from '@/games/application/games.controller';
 import { GameFetcher } from '@/games/application/services/game-fetcher';
+import { MatchmakingService } from '@/games/application/services/matchmaking.service';
+import { PlayerSessionService } from '@/games/application/services/player-session.service';
+import { GatewayEmitterService } from '@/games/application/websocket/gateway-emitter.service';
+import { ResponseBuilderService } from '@/games/application/websocket/response-builder.service';
+import { WebsocketGateway } from '@/games/application/websocket/websocket.gateway';
 import { DomainModule } from '@/games/domain/domain.module';
 import { InfrastructureModule } from '@/games/infrastructure/infrastructure.module';
 import { UsersModule } from '@/users/users.module';
-
-import { MatchmakingService } from './services/matchmaking.service';
-import { PlayerSessionService } from './services/player-session.service';
-import { GatewayEmitterService } from './websocket/gateway-emitter.service';
-import { ResponseBuilderService } from './websocket/response-builder.service';
-import { WebsocketGateway } from './websocket/websocket.gateway';
-import { GamesController } from './games.controller';
 
 @Module({
   imports: [DomainModule, InfrastructureModule, AuthModule, UsersModule],
