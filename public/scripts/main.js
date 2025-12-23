@@ -164,6 +164,10 @@ function playAgain() {
     return;
   }
 
+  if (!state.socket) {
+    _initializeWebSocket();
+  }
+
   _emit('play_again');
 }
 
@@ -228,6 +232,7 @@ function _initializeWebSocket() {
   });
 
   socket.on('disconnect', function () {
+    state.socket = null;
     console.debug('WebSocket disconnected');
   });
 }
