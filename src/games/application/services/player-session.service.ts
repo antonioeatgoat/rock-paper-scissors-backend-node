@@ -33,7 +33,6 @@ export class PlayerSessionService {
     this.sockets.delete(userId);
   }
 
-  // TODO remove?
   playerExists(userID: string): boolean {
     return this.players.has(userID);
   }
