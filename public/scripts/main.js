@@ -246,7 +246,7 @@ function _changeScreen(screen) {
 
 function _cleanPlayingScreen() {
   _showById('moves-container');
-  _hideById('choosen-move-container');
+  _hideById('chosen-move-container');
 }
 
 function _renderPlayingGame(data) {
@@ -279,8 +279,8 @@ function _renderFinishedGame(data) {
 
 function _renderMoveSelected(move) {
   _hideById('moves-container');
-  _updateTextById('choosen-move', move);
-  _showById('choosen-move-container');
+  _updateTextById('chosen-move', move);
+  _showById('chosen-move-container');
 }
 
 function _emit(event, data) {
