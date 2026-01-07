@@ -3,7 +3,6 @@ import { Injectable, Logger } from '@nestjs/common';
 import { CommandHandler } from '@/games/application/command/command-handler.interface';
 import { SelectMoveCommand } from '@/games/application/command/select-move.command';
 import { GameFetcher } from '@/games/application/services/game-fetcher';
-import { PlayerSessionService } from '@/games/application/services/player-session.service';
 import { EndedGameError } from '@/games/application/websocket/errors/ended-game.error';
 import { GameNotFoundError } from '@/games/application/websocket/errors/game-not-found.error';
 import { GatewayEmitterService } from '@/games/application/websocket/gateway-emitter.service';
@@ -17,7 +16,6 @@ export class SelectMoveHandler implements CommandHandler<SelectMoveCommand> {
     private readonly gameFetcher: GameFetcher,
     private readonly emitter: GatewayEmitterService,
     private readonly gameRepository: GamesRepositoryService,
-    private readonly playerSession: PlayerSessionService,
   ) {}
 
   async execute(command: SelectMoveCommand): Promise<void> {
@@ -51,9 +49,6 @@ export class SelectMoveHandler implements CommandHandler<SelectMoveCommand> {
     }
 
     this.emitter.emitGameFinished(game);
-    for (const p of game.players()) {
-      this.playerSession.unregister(p.id());
-    }
 
     this.logger.debug(`Game is finished`, {
       game: game.id(),
