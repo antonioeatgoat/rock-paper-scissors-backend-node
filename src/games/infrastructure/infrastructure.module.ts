@@ -1,7 +1,7 @@
 import { Module } from '@nestjs/common';
 
 import { GamesRepositoryService } from '@/games/infrastructure/games-repository.service';
-import { InMemoryRepository } from '@/users/repositories/in-memory.repository';
+import { InMemoryRepository } from '@/games/infrastructure/repositories/in-memory.repository';
 
 @Module({
   providers: [
