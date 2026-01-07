@@ -1,128 +1,205 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <title>Rock Paper Scissors</title>
-  <link href="./styles/styles.css" rel="stylesheet">
-</head>
-<body class="bg-gradient-to-br from-purple-600 via-pink-600 to-red-600 text-gray-600 min-h-screen flex flex-col">
-<!-- Header -->
-<header id="game-header" class="hidden bg-white/90 backdrop-blur-sm shadow-md">
-  <div class="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between">
-    <p class="text-gray-800 font-semibold">Hello, <span class="current-nickname"></span></p>
-
-    <button
-      id="exit-game-btn"
-      class="hidden bg-gradient-to-r from-purple-600 to-pink-600 text-white font-semibold px-4 py-2 rounded-lg hover:from-purple-700 hover:to-pink-700 transition transform hover:scale-105"
+  <head>
+    <meta charset="UTF-8" />
+    <title>Rock Paper Scissors</title>
+    <link href="./styles/styles.css" rel="stylesheet" />
+  </head>
+  <body
+    class="flex min-h-screen flex-col bg-gradient-to-br from-purple-600 via-pink-600 to-red-600 text-gray-600"
+  >
+    <!-- Header -->
+    <header
+      id="game-header"
+      class="hidden bg-white/90 shadow-md backdrop-blur-sm"
     >
-      Leave game
-    </button>
-  </div>
-</header>
-<div id="screens-wrap" class="flex-1 w-full flex items-center justify-center p-4">
-  <div id="screen-loading" class="screen min-w-1/3 bg-white rounded-2xl shadow-2xl p-8">
-    <div class="text-center mb-8">
-      <h1 class="text-3xl font-bold text-gray-800 mb-2">Loading...</h1>
-    </div>
-  </div>
-  <div id="screen-login" class="screen min-w-1/3 bg-white rounded-2xl shadow-2xl p-8">
-      <div class="text-center mb-8">
-        <h1 class="text-4xl font-bold text-gray-800 mb-2">Rock Paper Scissors</h1>
-      </div>
-
-      <div>
-        <form id="signup-form">
-          <label for="nickname-input">Enter your nickname to start playing</label>
-          <input
-            type="text"
-            id="nickname-input"
-            placeholder="Your nickname"
-            maxlength="20"
-            class="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:outline-none focus:border-purple-500 text-lg mb-4"
-          />
-          <p class="error-message hidden text-red-600 my-1"></p>
-
-          <button
-            id="submit-nickname-btn"
-            class="w-full bg-gradient-to-r from-purple-600 to-pink-600 text-white font-bold py-3 rounded-lg hover:from-purple-700 hover:to-pink-700 transition transform hover:scale-105"
-          >
-            Continue
-          </button>
-        </form>
-      </div>
-    </div>
-
-    <div id="screen-lobby" class="screen min-w-1/3 hidden bg-white rounded-2xl shadow-2xl p-8">
-      <div class="text-center mb-8">
-        <h2 class="text-3xl font-bold text-gray-800 mb-2">Welcome, <span class="current-nickname"></span>!</h2>
-        <p>Ready to play?</p>
-      </div>
-
-      <button
-        id="join-game-btn"
-        class="w-full bg-gradient-to-r from-green-500 to-emerald-600 text-white font-bold py-4 rounded-lg hover:from-green-600 hover:to-emerald-700 transition transform hover:scale-105 text-xl"
+      <div
+        class="mx-auto flex max-w-7xl items-center justify-between px-4 py-3"
       >
-        Join a New Game
-      </button>
-    </div>
+        <p class="font-semibold text-gray-800">
+          Hello, <span class="current-nickname"></span>
+        </p>
 
-    <div id="screen-waiting" class="screen min-w-1/3 hidden bg-white rounded-2xl shadow-2xl p-8">
-      <div class="text-center py-12">
-        <div class="animate-spin rounded-full h-16 w-16 border-b-4 border-purple-600 mx-auto mb-4"></div>
-        <h2 class="text-2xl font-bold text-gray-800 mb-2">Waiting for opponent...</h2>
-        <p>Searching for another player</p>
-      </div>
-    </div>
-
-    <div id="screen-playing" class="screen min-w-1/3 hidden bg-white rounded-2xl shadow-2xl p-8 text-center" data-screen="playing">
-      <h2 class="text-2xl font-bold text-gray-800 mb-4">You are playng against <span class="opponent-nickname font-bold"></span></h2>
-      <h3 class="text-2xl text-gray-800 mb-4">Make Your Move!</h3>
-
-      <div id="moves-container">
         <button
-          class="move-btn p-4 bg-gradient-to-r from-green-500 to-emerald-600 text-white font-bold rounded-lg hover:from-green-600 hover:to-emerald-700 transition transform hover:scale-105 text-xl"
-          data-move="rock"
-        >Rock!</button>
-        <button
-          class="move-btn p-4 bg-gradient-to-r from-green-500 to-emerald-600 text-white font-bold rounded-lg hover:from-green-600 hover:to-emerald-700 transition transform hover:scale-105 text-xl"
-          data-move="paper"
-        >Paper!</button>
-        <button
-          class="move-btn p-4 bg-gradient-to-r from-green-500 to-emerald-600 text-white font-bold rounded-lg hover:from-green-600 hover:to-emerald-700 transition transform hover:scale-105 text-xl"
-          data-move="scissors"
-        >Scissors!</button>
+          id="exit-game-btn"
+          class="hidden transform rounded-lg bg-gradient-to-r from-purple-600 to-pink-600 px-4 py-2 font-semibold text-white transition hover:scale-105 hover:from-purple-700 hover:to-pink-700"
+        >
+          Leave game
+        </button>
       </div>
-      <div id="choosen-move-container" class="hidden">
-        <p class="mb-2">Your move is <span id="choosen-move" class="font-bold"></span></p>
-        <p>Waiting for opponent...</p>
+    </header>
+    <div
+      id="screens-wrap"
+      class="flex w-full flex-1 items-center justify-center p-4"
+    >
+      <div
+        id="screen-loading"
+        class="screen min-w-1/3 rounded-2xl bg-white p-8 shadow-2xl"
+      >
+        <div class="mb-8 text-center">
+          <h1 class="mb-2 text-3xl font-bold text-gray-800">Loading...</h1>
+        </div>
       </div>
-    </div>
+      <div
+        id="screen-login"
+        class="screen min-w-1/3 rounded-2xl bg-white p-8 shadow-2xl"
+      >
+        <div class="mb-8 text-center">
+          <h1 class="mb-2 text-4xl font-bold text-gray-800">
+            Rock Paper Scissors
+          </h1>
+        </div>
 
+        <div>
+          <form id="signup-form">
+            <label for="nickname-input"
+              >Enter your nickname to start playing</label
+            >
+            <input
+              type="text"
+              id="nickname-input"
+              placeholder="Your nickname"
+              maxlength="20"
+              class="mb-4 w-full rounded-lg border-2 border-gray-300 px-4 py-3 text-lg focus:border-purple-500 focus:outline-none"
+            />
+            <p class="error-message my-1 hidden text-red-600"></p>
 
-    <div id="screen-game-finished" class="screen min-w-1/3 hidden bg-white rounded-2xl shadow-2xl p-8">
-      <div class="text-center mb-8">
-        <h2 id="game-result-won" class="game-result hidden text-4xl font-bold mb-4">You <span class="font-bold">won!</span></h2>
-        <h2 id="game-result-lost" class="game-result hidden text-4xl font-bold mb-4">You <span class="font-bold">lost...</span></h2>
-        <h2 id="game-result-tie" class="game-result hidden text-4xl font-bold mb-4">It was <span class="font-bold">a tie</span></h2>
-
-        <p id="game-result-opponent-left" class="game-result hidden mt-3">Your opponent left the game.</p>
-
-        <div id="game-result-moves" class="game-result hidden mt-3">
-          <p class="text-left text-xl">You: <span id="your-move" class="font-bold"></span></p>
-          <p class="text-right text-xl"><span class="opponent-nickname"></span>: <span id="opponent-move" class="font-bold"></span></p>
+            <button
+              id="submit-nickname-btn"
+              class="w-full transform rounded-lg bg-gradient-to-r from-purple-600 to-pink-600 py-3 font-bold text-white transition hover:scale-105 hover:from-purple-700 hover:to-pink-700"
+            >
+              Continue
+            </button>
+          </form>
         </div>
       </div>
 
-      <button
-        id="play-again-btn"
-        class="w-full bg-gradient-to-r from-purple-600 to-pink-600 text-white font-bold py-4 rounded-lg hover:from-purple-700 hover:to-pink-700 transition transform hover:scale-105 text-xl"
-        onclick="playAgain()"
+      <div
+        id="screen-lobby"
+        class="screen hidden min-w-1/3 rounded-2xl bg-white p-8 shadow-2xl"
       >
-        Play Again
-      </button>
+        <div class="mb-8 text-center">
+          <h2 class="mb-2 text-3xl font-bold text-gray-800">
+            Welcome, <span class="current-nickname"></span>!
+          </h2>
+          <p>Ready to play?</p>
+        </div>
+
+        <button
+          id="join-game-btn"
+          class="w-full transform rounded-lg bg-gradient-to-r from-green-500 to-emerald-600 py-4 text-xl font-bold text-white transition hover:scale-105 hover:from-green-600 hover:to-emerald-700"
+        >
+          Join a New Game
+        </button>
+      </div>
+
+      <div
+        id="screen-waiting"
+        class="screen hidden min-w-1/3 rounded-2xl bg-white p-8 shadow-2xl"
+      >
+        <div class="py-12 text-center">
+          <div
+            class="mx-auto mb-4 h-16 w-16 animate-spin rounded-full border-b-4 border-purple-600"
+          ></div>
+          <h2 class="mb-2 text-2xl font-bold text-gray-800">
+            Waiting for opponent...
+          </h2>
+          <p>Searching for another player</p>
+        </div>
+      </div>
+
+      <div
+        id="screen-playing"
+        class="screen hidden min-w-1/3 rounded-2xl bg-white p-8 text-center shadow-2xl"
+        data-screen="playing"
+      >
+        <h2 class="mb-4 text-2xl font-bold text-gray-800">
+          You are playng against
+          <span class="opponent-nickname font-bold"></span>
+        </h2>
+        <h3 class="mb-4 text-2xl text-gray-800">Make Your Move!</h3>
+
+        <div id="moves-container">
+          <button
+            class="move-btn transform rounded-lg bg-gradient-to-r from-green-500 to-emerald-600 p-4 text-xl font-bold text-white transition hover:scale-105 hover:from-green-600 hover:to-emerald-700"
+            data-move="rock"
+          >
+            Rock!
+          </button>
+          <button
+            class="move-btn transform rounded-lg bg-gradient-to-r from-green-500 to-emerald-600 p-4 text-xl font-bold text-white transition hover:scale-105 hover:from-green-600 hover:to-emerald-700"
+            data-move="paper"
+          >
+            Paper!
+          </button>
+          <button
+            class="move-btn transform rounded-lg bg-gradient-to-r from-green-500 to-emerald-600 p-4 text-xl font-bold text-white transition hover:scale-105 hover:from-green-600 hover:to-emerald-700"
+            data-move="scissors"
+          >
+            Scissors!
+          </button>
+        </div>
+        <div id="choosen-move-container" class="hidden">
+          <p class="mb-2">
+            Your move is <span id="choosen-move" class="font-bold"></span>
+          </p>
+          <p>Waiting for opponent...</p>
+        </div>
+      </div>
+
+      <div
+        id="screen-game-finished"
+        class="screen hidden min-w-1/3 rounded-2xl bg-white p-8 shadow-2xl"
+      >
+        <div class="mb-8 text-center">
+          <h2
+            id="game-result-won"
+            class="game-result mb-4 hidden text-4xl font-bold"
+          >
+            You <span class="font-bold">won!</span>
+          </h2>
+          <h2
+            id="game-result-lost"
+            class="game-result mb-4 hidden text-4xl font-bold"
+          >
+            You <span class="font-bold">lost...</span>
+          </h2>
+          <h2
+            id="game-result-tie"
+            class="game-result mb-4 hidden text-4xl font-bold"
+          >
+            It was <span class="font-bold">a tie</span>
+          </h2>
+
+          <p id="game-result-opponent-left" class="game-result mt-3 hidden">
+            Your opponent left the game.
+          </p>
+
+          <div id="game-result-moves" class="game-result mt-3 hidden">
+            <p class="text-left text-xl">
+              You: <span id="your-move" class="font-bold"></span>
+            </p>
+            <p class="text-right text-xl">
+              <span class="opponent-nickname"></span>:
+              <span id="opponent-move" class="font-bold"></span>
+            </p>
+          </div>
+        </div>
+
+        <button
+          id="play-again-btn"
+          class="w-full transform rounded-lg bg-gradient-to-r from-purple-600 to-pink-600 py-4 text-xl font-bold text-white transition hover:scale-105 hover:from-purple-700 hover:to-pink-700"
+          onclick="playAgain()"
+        >
+          Play Again
+        </button>
+      </div>
     </div>
-</div>
-    <script src="https://cdn.socket.io/4.3.2/socket.io.min.js" integrity="sha384-KAZ4DtjNhLChOB/hxXuKqhMLYvx3b5MlT55xPEiNmREKRzeEm+RVPlTnAn0ajQNs" crossorigin="anonymous"></script>
+    <script
+      src="https://cdn.socket.io/4.3.2/socket.io.min.js"
+      integrity="sha384-KAZ4DtjNhLChOB/hxXuKqhMLYvx3b5MlT55xPEiNmREKRzeEm+RVPlTnAn0ajQNs"
+      crossorigin="anonymous"
+    ></script>
     <script src="./scripts/main.js"></script>
-</body>
+  </body>
 </html>

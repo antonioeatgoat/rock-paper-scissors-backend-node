@@ -6,21 +6,22 @@ let state = {
   socket: null,
   nickname: '',
   opponentNickname: '',
-}
+};
 
 function render() {
-
   // Render Screen
   _hideByClass('.screen');
-  _showById('screen-' + state.screen)
+  _showById('screen-' + state.screen);
 
   // Render current nickname
-  document.querySelectorAll('.current-nickname')
-    .forEach(element => element.textContent = state.nickname);
+  document
+    .querySelectorAll('.current-nickname')
+    .forEach((element) => (element.textContent = state.nickname));
 
   // Render opponent nickname
-  document.querySelectorAll('.opponent-nickname')
-    .forEach(element => element.textContent = state.opponentNickname);
+  document
+    .querySelectorAll('.opponent-nickname')
+    .forEach((element) => (element.textContent = state.opponentNickname));
 
   if (state.screen === 'login' || state.nickname === '') {
     _hideById('game-header');
@@ -35,45 +36,44 @@ function render() {
   }
 }
 
-document.addEventListener("DOMContentLoaded",  main);
+document.addEventListener('DOMContentLoaded', main);
 
 function main() {
-  document.getElementById('signup-form')
-    .addEventListener(
-      'submit',
-      (event) => {event.preventDefault(); signUp();}
-    );
-  document.getElementById('submit-nickname-btn')
+  document.getElementById('signup-form').addEventListener('submit', (event) => {
+    event.preventDefault();
+    signUp();
+  });
+  document
+    .getElementById('submit-nickname-btn')
     .addEventListener('click', signUp);
-  document.getElementById('join-game-btn')
-    .addEventListener('click', findGame);
-  document.getElementById('play-again-btn')
+  document.getElementById('join-game-btn').addEventListener('click', findGame);
+  document
+    .getElementById('play-again-btn')
     .addEventListener('click', playAgain);
-  document.getElementById('exit-game-btn')
-    .addEventListener('click', exitGame);
+  document.getElementById('exit-game-btn').addEventListener('click', exitGame);
   document.querySelectorAll('.move-btn').forEach((button) => {
     button.addEventListener('click', function () {
       makeMove(this.dataset.move);
     });
   });
 
-  _loadStoredState()
+  _loadStoredState();
 
   if (state.nickname === '' || state.screen === 'login') {
     _resetState();
-    _changeScreen('login')
+    _changeScreen('login');
     return;
   }
 
   const previousScreen = state.screen;
-  _changeScreen('loading')
+  _changeScreen('loading');
   _refreshPreviousStatus(previousScreen);
 }
 
 async function _refreshPreviousStatus(previousScreen) {
   const response = await fetch(API_BASE_URL + '/games/current-game', {
     method: 'GET',
-    headers: { 'Content-Type': 'application/json' }
+    headers: { 'Content-Type': 'application/json' },
   });
 
   const data = await response.json();
@@ -104,10 +104,8 @@ async function _refreshPreviousStatus(previousScreen) {
 
 // Handle nickname submission
 async function signUp() {
-  _hideRegisterError()
-  const inputEl = document.getElementById(
-    'nickname-input',
-  );
+  _hideRegisterError();
+  const inputEl = document.getElementById('nickname-input');
   const nickname = inputEl?.value?.trim();
 
   if (!nickname) {
@@ -132,7 +130,7 @@ async function signUp() {
     }
 
     state.nickname = nickname;
-    _changeScreen('lobby')
+    _changeScreen('lobby');
   } catch (error) {
     console.error('Error logging in:', error);
   }
@@ -209,20 +207,23 @@ function _initializeWebSocket() {
     console.debug('Game finished');
     console.debug(data);
 
-    _hideByClass('.game-result')
+    _hideByClass('.game-result');
 
-    _updateTextById('your-move', data?.yourMove ? data.yourMove : 'Not played')
-    _updateTextById('opponent-move', data?.opponentMove ? data?.opponentMove : 'Not played')
+    _updateTextById('your-move', data?.yourMove ? data.yourMove : 'Not played');
+    _updateTextById(
+      'opponent-move',
+      data?.opponentMove ? data?.opponentMove : 'Not played',
+    );
 
     const resultElMap = {
       winner: ['game-result-won', 'game-result-moves'],
       opponent_left: ['game-result-won', 'game-result-opponent-left'],
       loser: ['game-result-lost', 'game-result-moves'],
       tie: ['game-result-tie', 'game-result-moves'],
-    }
+    };
 
     if (data?.result in resultElMap) {
-      for(const elId of resultElMap[data?.result]) {
+      for (const elId of resultElMap[data?.result]) {
         console.log('showing by id ', elId);
         _showById(elId);
       }
@@ -255,22 +256,22 @@ function _renderPlayingGame(data) {
   _changeScreen('playing');
 
   if (data?.yourMove) {
-    _renderMoveSelected(data.yourMove)
+    _renderMoveSelected(data.yourMove);
   }
 }
 
 function _renderFinishedGame(data) {
-  _updateTextById('your-move', data.yourMove)
-  _updateTextById('opponent-move', data.opponentMove)
+  _updateTextById('your-move', data.yourMove);
+  _updateTextById('opponent-move', data.opponentMove);
 
-  _hideByClass('.game-result')
+  _hideByClass('.game-result');
 
   if (data.draw === true) {
-    _showById('game-result-tie')
+    _showById('game-result-tie');
   } else if (data.winner === true) {
-    _showById('game-result-won')
+    _showById('game-result-won');
   } else {
-    _showById('game-result-lost')
+    _showById('game-result-lost');
   }
 
   _changeScreen('game-finished');
@@ -290,14 +291,18 @@ function _emit(event, data) {
 function _storeState() {
   window.localStorage.setItem(
     'state',
-    JSON.stringify({screen: state.screen, nickname: state.nickname})
+    JSON.stringify({ screen: state.screen, nickname: state.nickname }),
   );
 }
 
 function _loadStoredState() {
   const storedState = JSON.parse(window.localStorage.getItem('state'));
 
-  if (storedState instanceof Object && 'screen' in storedState && 'nickname' in storedState) {
+  if (
+    storedState instanceof Object &&
+    'screen' in storedState &&
+    'nickname' in storedState
+  ) {
     state.screen = storedState.screen;
     state.nickname = storedState.nickname;
   }
@@ -309,7 +314,7 @@ function _resetState() {
     socket: null,
     nickname: '',
     opponentNickname: '',
-  }
+  };
 }
 
 function _displayRegisterError(message) {
@@ -324,7 +329,7 @@ function _hideRegisterError() {
 }
 
 function _updateTextById(elementId, text) {
-  const element = document.getElementById(elementId)
+  const element = document.getElementById(elementId);
 
   if (!element) {
     console.error('Cannot select element', elementId);
@@ -334,27 +339,28 @@ function _updateTextById(elementId, text) {
   element.textContent = text;
 }
 
-
 function _hideById(elementId) {
-  const element = document.getElementById(elementId)
+  const element = document.getElementById(elementId);
   if (element) {
     element.classList.add('hidden');
   }
 }
 
 function _showById(elementId) {
-  const element = document.getElementById(elementId)
+  const element = document.getElementById(elementId);
   if (element) {
     element.classList.remove('hidden');
   }
 }
 
 function _hideByClass(elementsClass) {
-  document.querySelectorAll(elementsClass)
-    .forEach(element => element.classList.add('hidden'));
+  document
+    .querySelectorAll(elementsClass)
+    .forEach((element) => element.classList.add('hidden'));
 }
 
 function _showByClass(elementsClass) {
-  document.querySelectorAll(elementsClass)
-    .forEach(element => element.classList.remove('hidden'));
+  document
+    .querySelectorAll(elementsClass)
+    .forEach((element) => element.classList.remove('hidden'));
 }
