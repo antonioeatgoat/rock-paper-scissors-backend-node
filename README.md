@@ -49,7 +49,7 @@ It exposes REST API endpoints and WebSocket listeners that the front-end uses to
 
 The only available authentication system is a form of guest access.  
 Once a nickname is entered (which must be unique), a user object is generated and stored in memory,
-and an access token is signed using JWT (with no expiration) and stored in an HTTPOnly cookie (with one month expiration).
+and an access token is signed using JWT (with no expiration) and stored in an HTTPOnly cookie (with one day expiration).
 No refresh token system is implemented.
 
 This means two things:

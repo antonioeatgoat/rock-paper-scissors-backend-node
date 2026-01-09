@@ -13,7 +13,7 @@ import { UsersRepositoryService } from '@/users/users-repository.service';
 @Injectable()
 export class AccessTokenService {
   private readonly cookieName: string = 'access_token';
-  private readonly cookieExpiration: number = 1000 * 60 * 60; // 1h
+  private readonly cookieExpiration: number = 1000 * 60 * 60 * 24; // 1 day
 
   private readonly logger = new Logger(AccessTokenService.name);
 
