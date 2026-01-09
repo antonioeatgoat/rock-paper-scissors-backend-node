@@ -2,6 +2,13 @@
 
 A proof of concept of a Rock Paper Scissors game, built with Node.js ([NestJS](https://nestjs.com/)) and Vanilla JS.
 
+### Why this project
+The main goal of this project was to experiment beyond the comfort zone of my day-to-day work.
+With a background strongly focused on PHP within the WordPress ecosystem, I used this application to get hands-on experience with a different stack (TypeScript, Jest, Node.js, NestJS, TailwindCSS) and with architectural decisions I am not usually exposed to (single-page applications and real-time communication).
+
+Some architectural choices—such as in-memory storage, JWTs with no expiration, and the absence of a database—may appear poor (and they are).
+However, since this project is intended purely as a proof of concept and a playground, I had to make some trade-off decision because of the limited time.
+
 ## Play the game
 
 Check it out online [here](https://rock-paper-scissors-backend-node-production.up.railway.app/).
@@ -25,13 +32,6 @@ $ npm run start
 ```
 
 Enjoy the game at http://localhost:3000.
-
-## Why this project
-The main goal of this project was to experiment beyond the comfort zone of my day-to-day work.
-With a background strongly focused on PHP within the WordPress ecosystem, I used this application to get hands-on experience with a different stack (TypeScript, Jest, Node.js, NestJS, TailwindCSS) and with architectural decisions I am not usually exposed to (single-page applications and real-time communication).
-
-Some architectural choices—such as in-memory storage, JWTs with no expiration, and the absence of a database—may appear poor (and they are).
-However, since this project is intended purely as a proof of concept and a playground, I had to make some trade-off decision because of the limited time.
 
 ## The project in detail
 
