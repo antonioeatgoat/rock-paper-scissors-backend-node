@@ -1,98 +1,88 @@
-<p align="center">
-  <a href="http://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo-small.svg" width="120" alt="Nest Logo" /></a>
-</p>
-
-[circleci-image]: https://img.shields.io/circleci/build/github/nestjs/nest/master?token=abc123def456
-[circleci-url]: https://circleci.com/gh/nestjs/nest
-
-  <p align="center">A progressive <a href="http://nodejs.org" target="_blank">Node.js</a> framework for building efficient and scalable server-side applications.</p>
-    <p align="center">
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/v/@nestjs/core.svg" alt="NPM Version" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/l/@nestjs/core.svg" alt="Package License" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/dm/@nestjs/common.svg" alt="NPM Downloads" /></a>
-<a href="https://circleci.com/gh/nestjs/nest" target="_blank"><img src="https://img.shields.io/circleci/build/github/nestjs/nest/master" alt="CircleCI" /></a>
-<a href="https://discord.gg/G7Qnnhy" target="_blank"><img src="https://img.shields.io/badge/discord-online-brightgreen.svg" alt="Discord"/></a>
-<a href="https://opencollective.com/nest#backer" target="_blank"><img src="https://opencollective.com/nest/backers/badge.svg" alt="Backers on Open Collective" /></a>
-<a href="https://opencollective.com/nest#sponsor" target="_blank"><img src="https://opencollective.com/nest/sponsors/badge.svg" alt="Sponsors on Open Collective" /></a>
-  <a href="https://paypal.me/kamilmysliwiec" target="_blank"><img src="https://img.shields.io/badge/Donate-PayPal-ff3f59.svg" alt="Donate us"/></a>
-    <a href="https://opencollective.com/nest#sponsor"  target="_blank"><img src="https://img.shields.io/badge/Support%20us-Open%20Collective-41B883.svg" alt="Support us"></a>
-  <a href="https://twitter.com/nestframework" target="_blank"><img src="https://img.shields.io/twitter/follow/nestframework.svg?style=social&label=Follow" alt="Follow us on Twitter"></a>
-</p>
-  <!--[![Backers on Open Collective](https://opencollective.com/nest/backers/badge.svg)](https://opencollective.com/nest#backer)
-  [![Sponsors on Open Collective](https://opencollective.com/nest/sponsors/badge.svg)](https://opencollective.com/nest#sponsor)-->
-
 ## Description
 
-[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
+A proof of concept of a Rock Paper Scissors game, built with Node.js ([NestJS](https://nestjs.com/)) and Vanilla JS.
 
-## Project setup
+## Play the game
+
+Check it out online [here](https://rock-paper-scissors-backend-node-production.up.railway.app/).
+
+### Do you want to try it locally?
+
+Clone the project, then install the dependencies:
 
 ```bash
-$ npm install
+npm install
 ```
 
-## Compile and run the project
+Compile and run the project:
 
 ```bash
-# development
+# build the assets
+$ npm run build
+
+# run the local server
 $ npm run start
-
-# watch mode
-$ npm run start:dev
-
-# production mode
-$ npm run start:prod
 ```
 
-## Run tests
+Enjoy the game at http://localhost:3000.
 
-```bash
-# unit tests
-$ npm run test
+## Why this project
+The main goal of this project was to experiment beyond the comfort zone of my day-to-day work.
+With a background strongly focused on PHP within the WordPress ecosystem, I used this application to get hands-on experience with a different stack (TypeScript, Jest, Node.js, NestJS, TailwindCSS) and with architectural decisions I am not usually exposed to (single-page applications and real-time communication).
 
-# e2e tests
-$ npm run test:e2e
+Some architectural choices—such as in-memory storage, JWTs with no expiration, and the absence of a database—may appear poor (and they are).
+However, since this project is intended purely as a proof of concept and a playground, I had to make some trade-off decision because of the limited time.
 
-# test coverage
-$ npm run test:cov
-```
+## The project in detail
 
-## Deployment
+This repository was originally intended to be used only for the back-end of the game, with the front-end developed and deployed separately.  
+However, for now, the front-end is also included here for simplicity and is served as a static asset from the `/public` folder.
 
-When you're ready to deploy your NestJS application to production, there are some key steps you can take to ensure it runs as efficiently as possible. Check out the [deployment documentation](https://docs.nestjs.com/deployment) for more information.
+Front-end scripts were kept as simple as possible before the porting of the repository, so they are still written in pure Vanilla JS with minimal abstraction.
+Styles are produced using [TailwindCSS](https://tailwindcss.com/).
 
-If you are looking for a cloud-based platform to deploy your NestJS application, check out [Mau](https://mau.nestjs.com), our official platform for deploying NestJS applications on AWS. Mau makes deployment straightforward and fast, requiring just a few simple steps:
+The back-end runs a Node.js server powered by the [NestJS](https://nestjs.com/) framework.  
+It is split into modules that handle user authentication and game logic.  
+It exposes REST API endpoints and WebSocket listeners that the front-end uses to communicate with it.
 
-```bash
-$ npm install -g @nestjs/mau
-$ mau deploy
-```
+### Limitations of the PoC
 
-With Mau, you can deploy your application in just a few clicks, allowing you to focus on building features rather than managing infrastructure.
+The only available authentication system is a form of guest access.  
+Once a nickname is entered (which must be unique), a user object is generated and stored in memory,
+and an access token is signed using JWT (with no expiration) and stored in an HTTPOnly cookie (with one month expiration).
+No refresh token system is implemented.
 
-## Resources
+This means two things:
+1. On every application crash or redeploy, all users will be logged out.
+2. There is no way for users to log out (well, this could actually be implemented), and there is no way for the application to invalidate user sessions.
 
-Check out a few resources that may come in handy when working with NestJS:
+In addition, there is no cleanup mechanism implemented for the in-memory storage. User objects (and game objects) will pile up over time.  
+This also means that, if you lose your user session (because of cookie expiration or because you clear browser data), it is not possible to reuse the same nickname, as the application will consider it already in use.
 
-- Visit the [NestJS Documentation](https://docs.nestjs.com) to learn more about the framework.
-- For questions and support, please visit our [Discord channel](https://discord.gg/G7Qnnhy).
-- To dive deeper and get more hands-on experience, check out our official video [courses](https://courses.nestjs.com/).
-- Deploy your application to AWS with the help of [NestJS Mau](https://mau.nestjs.com) in just a few clicks.
-- Visualize your application graph and interact with the NestJS application in real-time using [NestJS Devtools](https://devtools.nestjs.com).
-- Need help with your project (part-time to full-time)? Check out our official [enterprise support](https://enterprise.nestjs.com).
-- To stay in the loop and get updates, follow us on [X](https://x.com/nestframework) and [LinkedIn](https://linkedin.com/company/nestjs).
-- Looking for a job, or have a job to offer? Check out our official [Jobs board](https://jobs.nestjs.com).
+### Future features
 
-## Support
+The items below are listed in no particular order.
 
-Nest is an MIT-licensed open source project. It can grow thanks to the sponsors and support by the amazing backers. If you'd like to join them, please [read more here](https://docs.nestjs.com/support).
+### Technical
 
+- [ ] Increase code coverage.
+- [ ] Extract the front-end into a separate repository and deploy it independently (and port it to at least TypeScript).
+- [ ] Store users and games in Redis.
+
+### UX
+
+- [ ] Implement an actual login system using a service like [Logto](https://logto.io).
+- [ ] Add an in-game timer.
+- [ ] Support game rounds and a “Play again” option with the same opponent.
+- [ ] Invite a friend to a game.
+
+## Contribution
+
+Feel free to open an [issue](https://github.com/antonioeatgoat/rock-paper-scissors-backend-node/issues) if you have any feedback, or open a PR if you want to contribute.
 ## Stay in touch
 
-- Author - [Kamil Myśliwiec](https://twitter.com/kammysliwiec)
-- Website - [https://nestjs.com](https://nestjs.com/)
-- Twitter - [@nestframework](https://twitter.com/nestframework)
+- Author - [Antonio Mangiacapra](https://www.linkedin.com/in/antonio-mangiacapra-bb272360/)
 
 ## License
 
-Nest is [MIT licensed](https://github.com/nestjs/nest/blob/master/LICENSE).
+This game is [MIT licensed](https://github.com/nestjs/nest/blob/master/LICENSE).
