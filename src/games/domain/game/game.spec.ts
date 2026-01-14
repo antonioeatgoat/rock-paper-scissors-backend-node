@@ -1,3 +1,4 @@
+import { AllowedMove } from '@/games/domain/game/allowed-move.enum';
 import { Game } from '@/games/domain/game/game';
 import { GameStatus } from '@/games/domain/game/game-status.enum';
 import { Player } from '@/games/domain/player/player';
@@ -29,5 +30,35 @@ describe('Game', () => {
     expect(game.opponentOf(player1)).toBe(player2);
     expect(game.opponentOf(player2)).toBe(player1);
     expect(() => game.opponentOf({} as Player)).toThrow(Error);
+  });
+
+  it('should detect the winner', () => {
+    const game1 = new Game([player1, player2]);
+    game1.addMove({ player: player1, move: AllowedMove.ROCK });
+    game1.addMove({ player: player2, move: AllowedMove.ROCK });
+
+    expect(game1.isFinished()).toBe(true);
+    expect(game1.theWinner()).toBeNull();
+
+    const game2 = new Game([player1, player2]);
+    game2.addMove({ player: player1, move: AllowedMove.ROCK });
+    game2.addMove({ player: player2, move: AllowedMove.PAPER });
+
+    expect(game2.isFinished()).toBe(true);
+    expect(game2.theWinner()).toBe(player2);
+
+    const game3 = new Game([player1, player2]);
+    game3.addMove({ player: player1, move: AllowedMove.ROCK });
+    game3.addMove({ player: player2, move: AllowedMove.SCISSORS });
+
+    expect(game3.isFinished()).toBe(true);
+    expect(game3.theWinner()).toBe(player1);
+
+    const game4 = new Game([player1, player2]);
+    game4.addMove({ player: player1, move: AllowedMove.PAPER });
+    game4.addMove({ player: player2, move: AllowedMove.SCISSORS });
+
+    expect(game4.isFinished()).toBe(true);
+    expect(game4.theWinner()).toBe(player2);
   });
 });

@@ -28,11 +28,6 @@ export class PlayerSessionService {
     return player;
   }
 
-  unregister(userId: string) {
-    this.players.delete(userId);
-    this.sockets.delete(userId);
-  }
-
   playerExists(userID: string): boolean {
     return this.players.has(userID);
   }
