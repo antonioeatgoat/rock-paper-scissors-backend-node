@@ -65,7 +65,7 @@ The items below are listed in no particular order.
 
 ### Technical
 
-- [ ] Increase code coverage.
+- [X] Increase code coverage.
 - [ ] Extract the front-end into a separate repository and deploy it independently (and port it to at least TypeScript).
 - [ ] Store users and games in Redis.
 
@@ -79,6 +79,7 @@ The items below are listed in no particular order.
 ## Contribution
 
 Feel free to open an [issue](https://github.com/antonioeatgoat/rock-paper-scissors-backend-node/issues) if you have any feedback, or open a PR if you want to contribute.
+
 ## Stay in touch
 
 - Author - [Antonio Mangiacapra](https://www.linkedin.com/in/antonio-mangiacapra-bb272360/)
