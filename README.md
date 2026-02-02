@@ -1,6 +1,6 @@
 ## Description
 
-A proof of concept of a Rock Paper Scissors game, built with Node.js ([NestJS](https://nestjs.com/)) and Vanilla JS.
+A proof of concept of a Rock Paper Scissors game, built with [NestJS](https://nestjs.com/) (TypeScript) running on Node.js and deployed on [Railway](https://railway.com/).
 
 ### Why this project
 The main goal of this project was to experiment beyond the comfort zone of my day-to-day work.
@@ -35,15 +35,15 @@ Enjoy the game at http://localhost:3000.
 
 ## The project in detail
 
-This repository was originally intended to be used only for the back-end of the game, with the front-end developed and deployed separately.  
-However, for now, the front-end is also included here for simplicity and is served as a static asset from the `/public` folder.
+This repository was originally intended to be used only for the backend of the game, with the frontend developed and deployed separately.  
+However, for now, the frontend is also included here for simplicity and is served as a static asset from the `/public` folder.
 
-Front-end scripts were kept as simple as possible before the porting of the repository, so they are still written in pure Vanilla JS with minimal abstraction.
+Frontend scripts were kept as simple as possible before the porting of the repository, so they are still written in pure Vanilla JS with minimal abstraction.
 Styles are produced using [TailwindCSS](https://tailwindcss.com/).
 
-The back-end runs a Node.js server powered by the [NestJS](https://nestjs.com/) framework.  
+The backend runs a Node.js server powered by the [NestJS](https://nestjs.com/) framework.  
 It is split into modules that handle user authentication and game logic.  
-It exposes REST API endpoints and WebSocket listeners that the front-end uses to communicate with it.
+It exposes REST API endpoints and WebSocket listeners that the frontend uses to communicate with it.
 
 ### Limitations of the PoC
 
@@ -66,7 +66,7 @@ The items below are listed in no particular order.
 ### Technical
 
 - [X] Increase code coverage.
-- [ ] Extract the front-end into a separate repository and deploy it independently (and port it to at least TypeScript).
+- [ ] Extract the frontend into a separate repository and deploy it independently (and port it to at least TypeScript).
 - [ ] Store users and games in Redis.
 
 ### UX
